@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">RandomReddit</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <string name="drawer_tab1">Profile</string>
+    <string name="drawer_tab2">Favorites</string>
+    <string name="drawer_tab3">Logout</string>
+    <string name="drawer_tab3b">Login</string>
+
+    <string name="loading_text">Loading...</string>
+</resources>
