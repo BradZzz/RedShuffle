@@ -5,6 +5,8 @@ import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,22 +28,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
-import com.bradz.dotdashdot.randomreddit.models.Stock;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
-import com.google.gson.Gson;
+import com.bradz.dotdashdot.randomreddit.utils.Statics;
+import com.koushikdutta.ion.Ion;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -48,8 +47,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private CursorAdapter mCursorAdapter;
 
     private TextView mUpdatedTextView;
+    private String TAG = this.getClass().getCanonicalName();
 
-    public static final String AUTHORITY = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
+    //private static final int CONTENTPROVIDER = R.string.CONTENTPROVIDER;
+    //private static Statics statics;
+
+    SharedPreferences sharedpreferences;
+    public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
 
     // Account type
     public static final String ACCOUNT_TYPE = "example.com";
@@ -64,7 +68,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         initToolbar();
+        initWidgets();
 
+        //statics = new Statics(this, new int[]{CONTENTPROVIDER});
+
+        sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
         mAccount = createSyncAccount(this);
 
         getContentResolver().registerContentObserver(StockPriceContentProvider.CONTENT_URI,true,new StockContentObserver(new Handler()));
@@ -76,30 +84,59 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mCursorAdapter = new CursorAdapter(this,existingStocksCursor,0) {
             @Override
             public View newView(Context context, Cursor cursor, ViewGroup parent) {
-                return LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_2,parent,false);
+                return LayoutInflater.from(context).inflate(R.layout.article_row_layout,parent,false);
             }
 
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
                 TextView subreddit = (TextView) findViewById(R.id.subreddit);
 
-                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                TextView text1 = (TextView) view.findViewById(R.id.text1);
+                TextView text2 = (TextView) view.findViewById(R.id.text2);
+
+                ImageView sub_image = (ImageView) view.findViewById(R.id.sub_image);
+                sub_image.setClipToOutline(true);
 
                 view.setBackgroundResource(android.R.color.background_light);
 
                 String title = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_TITLE));
-                String url = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_URL));
+                final String url = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_URL));
                 String image = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_IMAGE));
                 String sub = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
                 int votes = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_VOTES));
 
+                Log.i("Subreddit","Sub: " + sub);
+
                 if (!subreddit.getText().equals(sub)) {
-                    subreddit.setText(sub);
+                    String subby = "/" + sub;
+                    subreddit.setText(subby);
                 }
 
                 text1.setText(title);
-                text2.setText(url);
+
+
+                String voteString = "Votes: " + votes;
+                text2.setText(voteString);
+
+                Ion.with(sub_image)
+                    .placeholder(R.drawable.reddit_logo)
+                    .error(R.drawable.reddit_logo)
+                    //.animateLoad(spinAnimation)
+                    //.animateIn(fadeInAnimation)
+                    .load(image);
+
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        String linkUrl = url;
+                        if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
+                            linkUrl = "http://" + linkUrl;
+                        }
+                        i.setData(Uri.parse(linkUrl));
+                        startActivity(i);
+                    }
+                });
             }
         };
 
@@ -109,13 +146,59 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
 
+        /*Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+        ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
+        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 90);*/
+
+        decideSync();
+    }
+
+    private void decideSync(){
+        Boolean checked = sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,true);
+        Log.i(TAG,"Checking: " + checked);
+        if (checked){
+            startSync();
+        } else {
+            stopSync();
+        }
+    }
+
+    private void startSync(){
+        Log.i(TAG,"startSync");
+        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+
         Bundle settingsBundle = new Bundle();
         settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
 
         ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
         ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
-        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 60);
+        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 90);
+    }
+
+    private void stopSync(){
+        Log.i(TAG,"stopSync");
+
+        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 0);
+        ContentResolver.cancelSync(mAccount, AUTHORITY);
+    }
+
+    private void initWidgets(){
+        SwitchCompat switchCompat = (SwitchCompat) findViewById(R.id.switch_compat);
+        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                Log.i(TAG,"Checked Change");
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,isChecked);
+                editor.apply();
+                decideSync();
+            }
+        });
     }
 
     private void initToolbar(){
@@ -126,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "This will eventually save your sub!", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
@@ -162,57 +245,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
             mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
-        }
-    }
-
-    private void addStockBySymbol(String symbol){
-        String data ="";
-        try {
-            URL url = new URL("http://dev.markitondemand.com/MODApis/Api/v2/Quote/json?symbol="+symbol);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.connect();
-            InputStream inStream = connection.getInputStream();
-            data = getInputData(inStream);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        Gson gson = new Gson();
-        Stock stock = gson.fromJson(data,Stock.class);
-
-        ContentValues values = new ContentValues();
-        values.put(StockDBHelper.COLUMN_TITLE,stock.getTitle());
-        values.put(StockDBHelper.COLUMN_URL,stock.getUrl());
-        values.put(StockDBHelper.COLUMN_VOTES, stock.getVotes());
-        values.put(StockDBHelper.COLUMN_IMAGE, stock.getImage());
-
-        Uri uri = getContentResolver().insert(StockPriceContentProvider.CONTENT_URI,values);
-        Log.d(MainActivity.class.getName(),"Inserted at: "+uri);
-    }
-
-    private String getInputData(InputStream inStream) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
-
-        String data = null;
-
-        while ((data = reader.readLine()) != null){
-            builder.append(data);
-        }
-
-        reader.close();
-
-        return builder.toString();
-    }
-
-    private class StockAsyncTask extends AsyncTask<String,Void,Void> {
-
-        @Override
-        protected Void doInBackground(String... params) {
-            for (int i = 0; i < params.length; i++) {
-                addStockBySymbol(params[i]);
-            }
-            return null;
         }
     }
 
