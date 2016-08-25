@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
+import com.bradz.dotdashdot.randomreddit.helpers.tables.TABLE_SUB;
+import com.bradz.dotdashdot.randomreddit.helpers.tables.TABLE_THREAD;
 
 /**
  * Created by drewmahrt on 3/6/16.
@@ -16,12 +18,17 @@ import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 public class StockPriceContentProvider extends ContentProvider {
     private static final String AUTHORITY = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
     private static final String TABLE_THREADS = StockDBHelper.TABLE_THREADS;
+    private static final String TABLE_SUBS = StockDBHelper.TABLE_SUBS;
+
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + TABLE_THREADS);
+    public static final Uri CONTENT_URI_SUBS = Uri.parse("content://" + AUTHORITY + "/" + TABLE_SUBS);
     public static final Uri CONTENT_DROP = Uri.parse("content://" + AUTHORITY + "/flush");
 
     public static final int THREAD = 1;
     public static final int THREAD_ID = 2;
     public static final int FLUSH = 3;
+
+    public static final int SUB = 4;
     //public static final int STOCK_PORTFOLIO = 3;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -30,6 +37,8 @@ public class StockPriceContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, TABLE_THREADS, THREAD);
         sURIMatcher.addURI(AUTHORITY, TABLE_THREADS + "/#", THREAD_ID);
         sURIMatcher.addURI(AUTHORITY, "flush", FLUSH);
+
+        sURIMatcher.addURI(AUTHORITY, TABLE_SUBS, SUB);
         //sURIMatcher.addURI(AUTHORITY, STOCK_PRICES_TABLE + "/portfolio", STOCK_PORTFOLIO);
     }
 
@@ -50,14 +59,13 @@ public class StockPriceContentProvider extends ContentProvider {
 
         switch (uriType) {
             case THREAD_ID:
-                cursor = dbHelper.getThreadById(uri.getLastPathSegment());
+                cursor = TABLE_THREAD.getById(dbHelper.getReadable(),uri.getLastPathSegment());
                 break;
             case THREAD:
-                cursor = dbHelper.getThreads(selection,sortOrder);
+                cursor = TABLE_THREAD.get(dbHelper.getReadable(),selection,sortOrder);
                 break;
-            case FLUSH:
-                drop();
-                cursor = null;
+            case SUB:
+                cursor = TABLE_SUB.get(dbHelper.getReadable(),selection,sortOrder);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI");
@@ -83,7 +91,10 @@ public class StockPriceContentProvider extends ContentProvider {
         long id = 0;
         switch (uriType) {
             case THREAD:
-                id = dbHelper.addThread(values);
+                id = TABLE_THREAD.add(dbHelper.getWritable(),values);
+                break;
+            case SUB:
+                id = TABLE_SUB.add(dbHelper.getWritable(),values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -94,7 +105,20 @@ public class StockPriceContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        int uriType = sURIMatcher.match(uri);
+
+        switch (uriType) {
+            case THREAD:
+                TABLE_THREAD.drop(dbHelper.getWritable());
+                break;
+            case SUB:
+                TABLE_SUB.drop(dbHelper.getWritable());
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown URI");
+        }
+
+        return 1;
     }
 
     @Override
@@ -104,10 +128,10 @@ public class StockPriceContentProvider extends ContentProvider {
 
         switch (uriType) {
             case THREAD_ID:
-                rowsUpdated = dbHelper.updateThreadById(uri.getLastPathSegment(), values);
+                rowsUpdated = TABLE_THREAD.updateById(dbHelper.getWritable(),uri.getLastPathSegment(), values);
                 break;
             case THREAD:
-                rowsUpdated = dbHelper.updateThreadBySymbol(values, selection);
+                rowsUpdated = TABLE_THREAD.updateBySymbol(dbHelper.getWritable(),values, selection);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -119,6 +143,6 @@ public class StockPriceContentProvider extends ContentProvider {
 
     public void drop(){
         Log.i("Dropping!","Dropping!");
-        dbHelper.dropThreads();
+        TABLE_THREAD.drop(dbHelper.getWritable());
     }
 }

@@ -20,6 +20,7 @@ import com.android.volley.toolbox.Volley;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 import com.bradz.dotdashdot.randomreddit.models.Stock;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
+import com.bradz.dotdashdot.randomreddit.utils.Statics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,10 +35,9 @@ import java.util.List;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     ContentResolver mResolver;
 
-    private static final String AUTHORITY = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
+    private static final String AUTHORITY = Statics.CONTENTPROVIIDER;
     private static final String STOCKS_TABLE = "stocks";
-    public static final Uri SYMBOLS_CONTENT_URI = Uri.parse("content://"
-            + AUTHORITY + "/" + STOCKS_TABLE + "/symbols");
+    public static final Uri SYMBOLS_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + STOCKS_TABLE + "/symbols");
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -47,7 +47,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(SyncAdapter.class.getName(),"Starting sync");
-        mResolver.query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
+        //mResolver.query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
+        mResolver.delete(StockPriceContentProvider.CONTENT_URI,null,null);
 
         //getPortfolioStocks();
         getRandomBadSubs();

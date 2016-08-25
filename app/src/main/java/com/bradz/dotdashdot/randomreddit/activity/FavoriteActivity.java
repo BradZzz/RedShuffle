@@ -10,23 +10,22 @@ import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.SwitchCompat;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
@@ -43,15 +42,12 @@ import com.koushikdutta.ion.Ion;
 import java.text.DateFormat;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class FavoriteActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private CursorAdapter mCursorAdapter;
     ContentResolver mResolver;
 
     private TextView mUpdatedTextView;
     private String TAG = this.getClass().getCanonicalName();
-
-    //private static final int CONTENTPROVIDER = R.string.CONTENTPROVIDER;
-    //private static Statics statics;
 
     SharedPreferences sharedpreferences;
     public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
@@ -61,83 +57,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // Account
     public static final String ACCOUNT = "default_account";
 
-    private Account mAccount;
+    //private Account mAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
+        setContentView(R.layout.activity_favorite);
 
         initToolbar();
-        initWidgets();
+        //initWidgets();
+
+        //statics = new Statics(this, new int[]{CONTENTPROVIDER});
 
         mResolver = getContentResolver();
-        mAccount = createSyncAccount(this);
+        sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
+        //mAccount = createSyncAccount(this);
 
         getContentResolver().registerContentObserver(StockPriceContentProvider.CONTENT_URI,true,new StockContentObserver(new Handler()));
 
         //getContentResolver().query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
-        Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI,null,null,null,null);
+        Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI_SUBS,null,null,null,null);
 
         //cursorAdapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_2,existingStocksCursor,new String[]{StockDBHelper.COLUMN_STOCK_SYMBOL,StockDBHelper.COLUMN_STOCK_PRICE},new int[]{android.R.id.text1,android.R.id.text2},0);
         mCursorAdapter = new CursorAdapter(this,existingStocksCursor,0) {
             @Override
             public View newView(Context context, Cursor cursor, ViewGroup parent) {
-                return LayoutInflater.from(context).inflate(R.layout.article_row_layout,parent,false);
+                return LayoutInflater.from(context).inflate(R.layout.favorites_row_layout,parent,false);
             }
 
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
-                TextView subreddit = (TextView) findViewById(R.id.subreddit);
-
-                TextView text1 = (TextView) view.findViewById(R.id.text1);
-                TextView text2 = (TextView) view.findViewById(R.id.text2);
-
-                ImageView sub_image = (ImageView) view.findViewById(R.id.sub_image);
-                sub_image.setClipToOutline(true);
+                TextView sub = (TextView) view.findViewById(R.id.sub);
+                TextView seen = (TextView) view.findViewById(R.id.seen);
 
                 view.setBackgroundResource(android.R.color.background_light);
 
-                String title = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_TITLE));
-                final String url = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_URL));
-                String image = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_IMAGE));
-                String sub = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
-                int votes = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_VOTES));
+                String subreddit = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
+                int seenSub = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_SEEN));
 
-                Log.i("Subreddit","Sub: " + sub);
-
-                if (!subreddit.getText().equals(sub)) {
-                    String subby = "/" + sub;
-                    subreddit.setText(subby);
-                }
-
-                text1.setText(title);
-
-
-                String voteString = "Votes: " + votes;
-                text2.setText(voteString);
-
-                Ion.with(sub_image)
-                    .placeholder(R.drawable.reddit_logo)
-                    .error(R.drawable.reddit_logo)
-                    //.animateLoad(spinAnimation)
-                    //.animateIn(fadeInAnimation)
-                    .load(image);
-
-                view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        String linkUrl = url;
-                        if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
-                            linkUrl = "http://" + linkUrl;
-                        }
-                        i.setData(Uri.parse(linkUrl));
-                        startActivity(i);
-                    }
-                });
+                sub.setText(subreddit);
+                String seenS = ""+seenSub;
+                seen.setText(seenS);
             }
         };
 
@@ -147,8 +107,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
 
-        mResolver.delete(StockPriceContentProvider.CONTENT_URI_SUBS,null,null);
-
         /*Bundle settingsBundle = new Bundle();
         settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
@@ -157,52 +115,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
         ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 90);*/
 
-        decideSync();
-    }
-
-    private void decideSync(){
-        Boolean checked = sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,true);
-        Log.i(TAG,"Checking: " + checked);
-        if (checked){
-            startSync();
-        } else {
-            stopSync();
-        }
-    }
-
-    private void startSync(){
-        Log.i(TAG,"startSync");
-        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-        ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
-        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 90);
-    }
-
-    private void stopSync(){
-        Log.i(TAG,"stopSync");
-
-        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 0);
-        ContentResolver.cancelSync(mAccount, AUTHORITY);
-    }
-
-    private void initWidgets(){
-        SwitchCompat switchCompat = (SwitchCompat) findViewById(R.id.switch_compat);
-        switchCompat.setChecked(sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE, true));
-        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                Log.i(TAG,"Checked Change");
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,isChecked);
-                editor.apply();
-                decideSync();
-            }
-        });
+        //decideSync();
     }
 
     private void initToolbar(){
@@ -217,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 TextView subreddit = (TextView) findViewById(R.id.subreddit);
 
                 ContentValues contentValues = new ContentValues();
-                contentValues.put(StockDBHelper.COLUMN_SUB, subreddit.getText().toString().replace("/",""));
+                contentValues.put(StockDBHelper.COLUMN_SUB, subreddit.getText().toString());
                 contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
                 contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
                 mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
@@ -248,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public void onChange(boolean selfChange, Uri uri) {
             //do stuff on UI thread
-            Log.d(MainActivity.class.getName(),"Changed observed at "+uri);
+            Log.d(FavoriteActivity.class.getName(),"Changed observed at "+uri);
 
             //getContentResolver().query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
             mCursorAdapter.swapCursor(getContentResolver().query(StockPriceContentProvider.CONTENT_URI, null, null, null, null));
@@ -256,34 +169,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
             mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
         }
-    }
-
-    public static Account createSyncAccount(Context context) {
-        // Create the account type and default account
-        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
-        // Get an instance of the Android account manager
-        AccountManager accountManager = (AccountManager) context.getSystemService(ACCOUNT_SERVICE);
-
-        Log.i("createSyncAccount","Creating Account");
-
-        /*
-         * Add the account and account type, no password or user data
-         * If successful, return the Account object, otherwise report an error.
-         */
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-          /*
-           * If you don't set android:syncable="true" in
-           * in your <provider> element in the manifest,
-           * then call context.setIsSyncable(account, AUTHORITY, 1)
-           * here.
-           */
-        } else {
-            /*
-             * The account exists or some other error occurred. Log this, report it,
-             * or handle it internally.
-             */
-        }
-        return newAccount;
     }
 
     @Override
@@ -327,9 +212,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.nav_profile) {
 
         } else if (id == R.id.nav_favorites) {
-            Intent i = new Intent(this, FavoriteActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
+
         } else if (id == R.id.nav_logout) {
 
         } else if (id == R.id.nav_share) {

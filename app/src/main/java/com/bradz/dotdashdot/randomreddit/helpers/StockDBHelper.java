@@ -11,15 +11,21 @@ public class StockDBHelper extends SQLiteOpenHelper {
   private static final int DATABASE_VERSION = 1;
   private static final String DATABASE_NAME = "redditDB.db";
 
-  public static final String TABLE_THREADS = "THREADS";
   public static final String COLUMN_ID = "_id";
+  public static final String COLUMN_SUB = "sub";
+
+  public static final String TABLE_SUBS = "SUBS";
+  public static final String COLUMN_FAVORITE = "favorite";
+  public static final String COLUMN_SEEN = "seen";
+
+  public static final String TABLE_THREADS = "THREADS";
   public static final String COLUMN_TITLE = "title";
   public static final String COLUMN_URL = "url";
   public static final String COLUMN_VOTES = "votes";
-  public static final String COLUMN_SUB = "sub";
   public static final String COLUMN_IMAGE = "image";
 
-  public static final String[] ALL_COLUMNS = new String[]{COLUMN_ID,COLUMN_TITLE,COLUMN_URL,COLUMN_VOTES,COLUMN_SUB,COLUMN_IMAGE};
+  public static final String[] ALL_COLUMNS_THREAD = new String[]{COLUMN_ID,COLUMN_TITLE,COLUMN_URL,COLUMN_VOTES,COLUMN_SUB,COLUMN_IMAGE};
+  public static final String[] ALL_COLUMNS_SUBS = new String[]{COLUMN_ID,COLUMN_SUB,COLUMN_FAVORITE,COLUMN_SEEN};
 
   public StockDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
     super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -27,7 +33,7 @@ public class StockDBHelper extends SQLiteOpenHelper {
 
   @Override
   public void onCreate(SQLiteDatabase db) {
-    String CREATE_PRODUCTS_TABLE = "CREATE TABLE " +
+    String CREATE_THREADS_TABLE = "CREATE TABLE " +
             TABLE_THREADS + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY, "
             + COLUMN_TITLE + " TEXT, "
@@ -35,60 +41,30 @@ public class StockDBHelper extends SQLiteOpenHelper {
             + COLUMN_VOTES + " INTEGER,"
             + COLUMN_SUB + " TEXT,"
             + COLUMN_IMAGE + " TEXT)";
-    db.execSQL(CREATE_PRODUCTS_TABLE);
+    db.execSQL(CREATE_THREADS_TABLE);
+
+    String CREATE_SUBS_TABLE = "CREATE TABLE " +
+            TABLE_SUBS + "("
+            + COLUMN_ID + " INTEGER PRIMARY KEY, "
+            + COLUMN_SUB + " TEXT,"
+            + COLUMN_SEEN + " INTEGER,"
+            + COLUMN_FAVORITE + " INTEGER)";
+    db.execSQL(CREATE_SUBS_TABLE);
   }
 
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     db.execSQL("DROP TABLE IF EXISTS " + TABLE_THREADS);
+    db.execSQL("DROP TABLE IF EXISTS " + TABLE_SUBS);
     onCreate(db);
   }
 
-  public void dropThreads() {
-    SQLiteDatabase db = getWritableDatabase();
-    db.execSQL("delete from "+ TABLE_THREADS);
+  public SQLiteDatabase getWritable(){
+    return getWritableDatabase();
   }
 
-  public long addThread(ContentValues values) {
-
-    SQLiteDatabase db = getWritableDatabase();
-    long rowId = db.replace(TABLE_THREADS, null, values);
-    db.close();
-
-    return rowId;
+  public SQLiteDatabase getReadable(){
+    return getReadableDatabase();
   }
 
-  public int updateThreadById(String id, ContentValues values) {
-    SQLiteDatabase db = getWritableDatabase();
-
-    int numRowsChanged = db.update(TABLE_THREADS, values, COLUMN_ID + " = ?", new String[]{id});
-    db.close();
-
-    return numRowsChanged;
-  }
-
-  public int updateThreadBySymbol(ContentValues values, String selection) {
-    SQLiteDatabase db = getWritableDatabase();
-
-    int numRowsChanged = db.update(TABLE_THREADS, values, selection, null);
-    db.close();
-
-    return numRowsChanged;
-  }
-
-  public Cursor getThreads(String selection, String sortOrder){
-    SQLiteDatabase db = getReadableDatabase();
-
-    Cursor cursor = db.query(TABLE_THREADS, ALL_COLUMNS, selection, null, null, null, sortOrder);
-
-    return cursor;
-  }
-
-  public Cursor getThreadById(String id){
-    SQLiteDatabase db = getReadableDatabase();
-
-    Cursor cursor = db.query(TABLE_THREADS, ALL_COLUMNS, COLUMN_ID+" = ?", new String[]{id}, null, null, null);
-
-    return cursor;
-  }
 }
