@@ -13,8 +13,16 @@ import java.util.Map;
 public class Statics {
 
     public static String SHAREDSETTINGS = "randomreddit.settings";
-
     public static String SHAREDSETTINGS_AUTOUPDATE = "auto";
+
+    public static String CURRENTSUB = "randomreddit.currentsub";
+    public static String CURRENTSUB_DISPLAYNAME = "display_name";
+    public static String CURRENTSUB_PUBLICDESCRIPTION = "public_description";
+    public static String CURRENTSUB_DESCRIPTION = "description";
+    public static String CURRENTSUB_TITLE = "title";
+    public static String CURRENTSUB_HEADERTITLE = "header_title";
+    public static String CURRENTSUB_NSFW = "nsfw";
+
 
     public static String CONTENTPROVIIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 

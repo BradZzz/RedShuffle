@@ -8,12 +8,16 @@ public class Stock {
     private String url;
     private int votes;
     private String image;
+    private String full_image;
+    private boolean nsfw;
 
-    public Stock(String title, String url, String image, int votes){
+    public Stock(String title, String url, String image, int votes, String full_image, boolean nsfw){
         this.title = title;
         this.url = url;
         this.votes = votes;
         this.image = image;
+        this.full_image = full_image;
+        this.nsfw = nsfw;
     }
 
     public String getImage() {
@@ -46,5 +50,21 @@ public class Stock {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getFull_image() {
+        return full_image;
+    }
+
+    public void setFull_image(String full_image) {
+        this.full_image = full_image;
+    }
+
+    public boolean isNsfw() {
+        return nsfw;
+    }
+
+    public void setNsfw(boolean nsfw) {
+        this.nsfw = nsfw;
     }
 }

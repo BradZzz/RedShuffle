@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //private static final int CONTENTPROVIDER = R.string.CONTENTPROVIDER;
     //private static Statics statics;
 
-    SharedPreferences sharedpreferences;
+    SharedPreferences sharedpreferences, subredditpreferences;
     public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
 
     // Account type
@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
+        subredditpreferences = getSharedPreferences(Statics.CURRENTSUB, Context.MODE_PRIVATE);
 
         initToolbar();
         initButtons();
@@ -266,6 +267,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                     contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
                     contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
+
+                    String publicDesc = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
+                    if (!publicDesc.equals("")) {
+                        contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, publicDesc);
+                    }
+
+                    Boolean nsfw = subredditpreferences.getBoolean(Statics.CURRENTSUB_NSFW,false);
+                    contentValues.put(StockDBHelper.COLUMN_NSFW, nsfw);
+
+                    contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis() % 1000));
                     mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
                 }
             }
@@ -308,6 +319,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
         mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
+
+        String description_pref = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
+
+        if (!description_pref.equals("")) {
+            TextView description_text = (TextView) findViewById(R.id.description_text);
+            description_text.setText(description_pref);
+        }
     }
 
     public static Account createSyncAccount(Context context) {

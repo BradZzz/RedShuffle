@@ -12,6 +12,7 @@
     <string name="drawer_tab3b">Login</string>
 
     <string name="loading_text">Loading...</string>
+    <string name="description_header">Description</string>
 
     <string name="CONTENTPROVIDER">com.bradz.dotdashdot.randomreddit.StockPriceContentProvider</string>
 </resources>

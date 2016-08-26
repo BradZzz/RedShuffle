@@ -6,6 +6,7 @@ import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 import com.bradz.dotdashdot.randomreddit.models.Stock;
+import com.bradz.dotdashdot.randomreddit.models.Subreddit;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
 
@@ -27,6 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,11 +38,8 @@ import java.util.List;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     ContentResolver mResolver;
 
-    private static final String AUTHORITY = Statics.CONTENTPROVIIDER;
-    private static final String STOCKS_TABLE = "stocks";
+    private SharedPreferences sharedpreferences;
     private static RequestQueue queue;
-
-    public static final Uri SYMBOLS_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + STOCKS_TABLE + "/symbols");
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -47,57 +47,43 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         if (queue == null) {
             queue = Volley.newRequestQueue(getContext());
         }
+        sharedpreferences = context.getSharedPreferences(Statics.CURRENTSUB, Context.MODE_PRIVATE);
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(SyncAdapter.class.getName(),"Starting sync");
-        //mResolver.query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
-        //mResolver.delete(StockPriceContentProvider.CONTENT_URI,null,null);
-
-        //getPortfolioStocks();
-        getRandomBadSubs();
+        getRandomBadSub();
 
     }
 
-    /*private void getPortfolioStocks(){
-        Cursor cursor = mResolver.query(SYMBOLS_CONTENT_URI,null,"exchange = 'NYSE'",null,null);
-        while(cursor != null && cursor.moveToNext()) {
-            updateStockInfo(cursor.getString(0),true);
-        }
-    }*/
-
-    private void getRandomBadSubs(){
-        String stockUrl = "https://www.reddit.com/r/random.json";
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
-                stockUrl, (JSONObject) null, // here
+    private void getRandomBadSub(){
+        String subUrl = "https://www.reddit.com/r/random/about.json";
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, subUrl, (JSONObject) null, // here
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            String sub = "";
-                            List<Stock> threads = new ArrayList<Stock>();
-
                             JSONObject data = response.getJSONObject("data");
-                            JSONArray children = data.getJSONArray("children");
-                            for (int i = 0; i < children.length(); i++) {
-                                JSONObject child = children.getJSONObject(i);
-                                JSONObject data2 = child.getJSONObject("data");
-                                if (sub.equals("")) {
+                            Subreddit sub = new Subreddit(
+                                    data.getString("display_name"),
+                                    data.getString("public_description"),
+                                    data.getString("description"),
+                                    data.getString("title"),
+                                    data.getString("header_title"),
+                                    Boolean.valueOf(data.getString("over18"))
+                            );
 
-                                    sub = data2.getString("subreddit");
-                                }
-                                Stock thread = new Stock(
-                                        data2.getString("title"),
-                                        data2.getString("url"),
-                                        data2.getString("thumbnail"),
-                                        Integer.valueOf(data2.getString("ups"))
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putString(Statics.CURRENTSUB_DISPLAYNAME,sub.getDisplay_name());
+                            editor.putString(Statics.CURRENTSUB_DESCRIPTION,sub.getDescription());
+                            editor.putString(Statics.CURRENTSUB_PUBLICDESCRIPTION,sub.getPublic_description());
+                            editor.putString(Statics.CURRENTSUB_TITLE,sub.getTitle());
+                            editor.putString(Statics.CURRENTSUB_HEADERTITLE,sub.getHeader_title());
+                            editor.putBoolean(Statics.CURRENTSUB_NSFW,sub.isNsfw());
+                            editor.apply();
 
-                                );
-                                threads.add(thread);
-                            }
-                            updateStockInfo(threads, sub);
+                            getRandomBadSubs(sub);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -112,23 +98,60 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         queue.add(request);
     }
 
-    public void updateStockInfo(List<Stock> threads, String sub){
 
-        //Cursor checkCursor = mResolver.query(StockPriceContentProvider.CONTENT_URI,null,null,null,null);
-        /*if (checkCursor.moveToFirst()){
-            for (int i = 0; i < checkCursor.getCount(); i++) {
-                checkCursor.moveToPosition(i);
-                if (threads.size() > i) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(StockDBHelper.COLUMN_TITLE, threads.get(i).getTitle());
-                    contentValues.put(StockDBHelper.COLUMN_URL, threads.get(i).getUrl());
-                    contentValues.put(StockDBHelper.COLUMN_VOTES, threads.get(i).getVotes());
-                    contentValues.put(StockDBHelper.COLUMN_SUB, sub);
-                    contentValues.put(StockDBHelper.COLUMN_IMAGE, threads.get(i).getImage());
-                    mResolver.update(StockPriceContentProvider.CONTENT_URI, contentValues, "_id='" + checkCursor.getColumnIndex("_id") + "'", null);
-                }
-            }
-        } else {*/
+    private void getRandomBadSubs(final Subreddit sub){
+        String threadUrl = "https://www.reddit.com/r/" + sub.getDisplay_name() + ".json";
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, threadUrl, (JSONObject) null, // here
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            List<Stock> threads = new ArrayList<Stock>();
+
+                            JSONObject data = response.getJSONObject("data");
+                            JSONArray children = data.getJSONArray("children");
+                            for (int i = 0; i < children.length(); i++) {
+                                JSONObject child = children.getJSONObject(i);
+                                JSONObject data2 = child.getJSONObject("data");
+                                //This checks for bigger images
+                                String image_url = "";
+                                if (data2.has("preview") && !data2.isNull("preview")){
+                                    JSONObject preview = data2.getJSONObject("preview");
+                                    JSONArray images = preview.getJSONArray("images");
+                                    if (images.length() > 0) {
+                                        JSONObject firstpreview = images.getJSONObject(0);
+                                        JSONObject source = firstpreview.getJSONObject("source");
+                                        image_url = source.getString("url");
+                                    }
+                                }
+
+                                Stock thread = new Stock(
+                                        data2.getString("title"),
+                                        data2.getString("url"),
+                                        data2.getString("thumbnail"),
+                                        Integer.valueOf(data2.getString("ups")),
+                                        image_url,
+                                        Boolean.valueOf(data2.getString("over_18"))
+                                );
+                                threads.add(thread);
+                            }
+                            updateStockInfo(threads,sub);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+        queue.add(request);
+    }
+
+    public void updateStockInfo(List<Stock> threads, Subreddit sub){
         mResolver.delete(StockPriceContentProvider.CONTENT_URI,null,null);
         for (int i = 0; i < threads.size(); i++) {
             //checkCursor.moveToPosition(i);
@@ -139,12 +162,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             contentValues.put(StockDBHelper.COLUMN_TITLE, threads.get(i).getTitle());
             contentValues.put(StockDBHelper.COLUMN_URL, threads.get(i).getUrl());
             contentValues.put(StockDBHelper.COLUMN_VOTES, threads.get(i).getVotes());
-            contentValues.put(StockDBHelper.COLUMN_SUB, sub);
+            contentValues.put(StockDBHelper.COLUMN_SUB, sub.getDisplay_name());
             contentValues.put(StockDBHelper.COLUMN_IMAGE, threads.get(i).getImage());
+
+            contentValues.put(StockDBHelper.COLUMN_NSFW, threads.get(i).isNsfw());
+            contentValues.put(StockDBHelper.COLUMN_FULL_IMAGE, threads.get(i).getFull_image());
+            contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis() % 1000));
+
             mResolver.insert(StockPriceContentProvider.CONTENT_URI, contentValues);
         }
-        //}
-        //checkCursor.close();
     }
 }
 
