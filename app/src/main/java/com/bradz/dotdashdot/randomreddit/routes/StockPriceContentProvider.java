@@ -112,7 +112,11 @@ public class StockPriceContentProvider extends ContentProvider {
                 TABLE_THREAD.drop(dbHelper.getWritable());
                 break;
             case SUB:
-                TABLE_SUB.drop(dbHelper.getWritable());
+                if (!selection.isEmpty()) {
+                    TABLE_SUB.delete(dbHelper.getWritable(),selection);
+                } else {
+                    TABLE_SUB.drop(dbHelper.getWritable());
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI");

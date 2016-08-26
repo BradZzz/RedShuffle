@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -18,23 +17,21 @@
         android:layout_height="50dp"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/subreddit"
-            android:textAlignment="textStart"
-            android:textSize="24sp"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
+
+        <Button
+            android:id="@+id/reroll"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/loading_text"/>
+            android:text="Reroll"
+            android:enabled="true" />
 
         <android.support.v7.widget.SwitchCompat
             android:id="@+id/switch_compat"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="3"
-            android:checked="true"
-            android:textSize="12sp"
-            android:text="auto"/>
+            android:checked="true"/>
 
     </LinearLayout>
 

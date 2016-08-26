@@ -8,11 +8,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class StockDBHelper extends SQLiteOpenHelper {
 
-  private static final int DATABASE_VERSION = 1;
+  private static final int DATABASE_VERSION = 2;
   private static final String DATABASE_NAME = "redditDB.db";
 
   public static final String COLUMN_ID = "_id";
   public static final String COLUMN_SUB = "sub";
+  public static final String COLUMN_IMAGE = "image";
 
   public static final String TABLE_SUBS = "SUBS";
   public static final String COLUMN_FAVORITE = "favorite";
@@ -22,10 +23,9 @@ public class StockDBHelper extends SQLiteOpenHelper {
   public static final String COLUMN_TITLE = "title";
   public static final String COLUMN_URL = "url";
   public static final String COLUMN_VOTES = "votes";
-  public static final String COLUMN_IMAGE = "image";
 
-  public static final String[] ALL_COLUMNS_THREAD = new String[]{COLUMN_ID,COLUMN_TITLE,COLUMN_URL,COLUMN_VOTES,COLUMN_SUB,COLUMN_IMAGE};
-  public static final String[] ALL_COLUMNS_SUBS = new String[]{COLUMN_ID,COLUMN_SUB,COLUMN_FAVORITE,COLUMN_SEEN};
+  public static final String[] ALL_COLUMNS_THREAD = new String[]{COLUMN_ID, COLUMN_TITLE, COLUMN_URL, COLUMN_VOTES, COLUMN_SUB, COLUMN_IMAGE};
+  public static final String[] ALL_COLUMNS_SUBS = new String[]{COLUMN_ID, COLUMN_IMAGE, COLUMN_SUB, COLUMN_FAVORITE, COLUMN_SEEN};
 
   public StockDBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
     super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -47,6 +47,7 @@ public class StockDBHelper extends SQLiteOpenHelper {
             TABLE_SUBS + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY, "
             + COLUMN_SUB + " TEXT,"
+            + COLUMN_IMAGE + " TEXT,"
             + COLUMN_SEEN + " INTEGER,"
             + COLUMN_FAVORITE + " INTEGER)";
     db.execSQL(CREATE_SUBS_TABLE);

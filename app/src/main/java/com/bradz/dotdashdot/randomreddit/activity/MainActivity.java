@@ -28,11 +28,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
@@ -61,7 +63,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // Account
     public static final String ACCOUNT = "default_account";
 
+    private String first_image = null;
+
     private Account mAccount;
+
+    private View titleToolbar;
+    private TextView tView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,17 +78,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
 
         initToolbar();
+        initButtons();
         initWidgets();
+        initActionBar();
 
         mResolver = getContentResolver();
         mAccount = createSyncAccount(this);
 
         getContentResolver().registerContentObserver(StockPriceContentProvider.CONTENT_URI,true,new StockContentObserver(new Handler()));
 
-        //getContentResolver().query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
         Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI,null,null,null,null);
 
-        //cursorAdapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_2,existingStocksCursor,new String[]{StockDBHelper.COLUMN_STOCK_SYMBOL,StockDBHelper.COLUMN_STOCK_PRICE},new int[]{android.R.id.text1,android.R.id.text2},0);
+        tView = ((TextView) titleToolbar.findViewById(R.id.title));
+
+        setDate();
+
         mCursorAdapter = new CursorAdapter(this,existingStocksCursor,0) {
             @Override
             public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -90,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
-                TextView subreddit = (TextView) findViewById(R.id.subreddit);
+                //TextView subreddit = (TextView) findViewById(R.id.subreddit);
 
                 TextView text1 = (TextView) view.findViewById(R.id.text1);
                 TextView text2 = (TextView) view.findViewById(R.id.text2);
@@ -107,15 +118,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 int votes = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_VOTES));
 
                 Log.i("Subreddit","Sub: " + sub);
+                Log.i("Subreddit","Image: " + image);
 
-                if (!subreddit.getText().equals(sub)) {
-                    String subby = "/" + sub;
-                    subreddit.setText(subby);
+                if (first_image == null && image != null && !image.isEmpty() && image.contains("http")) {
+                    first_image = image;
                 }
-
+                if (tView != null && !tView.getText().equals(sub)) {
+                    String subby = "/" + sub;
+                    tView.setText(subby);
+                }
                 text1.setText(title);
-
-
                 String voteString = "Votes: " + votes;
                 text2.setText(voteString);
 
@@ -144,20 +156,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ListView listView = (ListView) findViewById(R.id.stock_price_list);
         listView.setAdapter(mCursorAdapter);
-
-        mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
-
-        mResolver.delete(StockPriceContentProvider.CONTENT_URI_SUBS,null,null);
-
-        /*Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-        ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
-        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 90);*/
-
         decideSync();
+    }
+
+    private void initActionBar(){
+        if (getActionBar() != null) {
+            getActionBar().setDisplayShowTitleEnabled(false);
+            getActionBar().setDisplayShowCustomEnabled(true);
+
+            LayoutInflater inflator = LayoutInflater.from(this);
+            titleToolbar = inflator.inflate(R.layout.titleview, null);
+            TextView tView = ((TextView) titleToolbar.findViewById(R.id.title));
+            tView.setText("something");
+            getActionBar().setCustomView(titleToolbar);
+        }
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowCustomEnabled(true);
+
+            LayoutInflater inflator = LayoutInflater.from(this);
+            titleToolbar = inflator.inflate(R.layout.titleview, null);
+            TextView tView = ((TextView) titleToolbar.findViewById(R.id.title));
+            tView.setText("something else");
+            getSupportActionBar().setCustomView(titleToolbar);
+        }
     }
 
     private void decideSync(){
@@ -174,13 +196,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.i(TAG,"startSync");
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
 
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        //Bundle settingsBundle = new Bundle();
+        //settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        //settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
 
-        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+        //ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
         ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
-        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 90);
+        ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 60);
     }
 
     private void stopSync(){
@@ -188,6 +210,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 0);
         ContentResolver.cancelSync(mAccount, AUTHORITY);
+    }
+
+    private void initButtons(){
+        Button reroll = (Button) findViewById(R.id.reroll);
+        reroll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Rerolling...", Toast.LENGTH_SHORT).show();
+
+                ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+                ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,false);
+
+                Bundle settingsBundle = new Bundle();
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+            }
+        });
     }
 
     private void initWidgets(){
@@ -200,6 +240,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,isChecked);
                 editor.apply();
+
+                Toast.makeText(getApplicationContext(), "Auto Update Enabled: " + isChecked, Toast.LENGTH_SHORT).show();
+
                 decideSync();
             }
         });
@@ -213,20 +256,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "This will eventually save your sub!", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                TextView subreddit = (TextView) findViewById(R.id.subreddit);
+                Snackbar.make(view, "Sub added to favorites", Snackbar.LENGTH_LONG).setAction("Action", null).show();
 
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(StockDBHelper.COLUMN_SUB, subreddit.getText().toString().replace("/",""));
-                contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
-                contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
-                mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
+                if (tView != null && !tView.getText().toString().isEmpty()) {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(StockDBHelper.COLUMN_SUB, tView.getText().toString().replace("/", ""));
+                    if (first_image != null) {
+                        contentValues.put(StockDBHelper.COLUMN_IMAGE, first_image);
+                    }
+                    contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
+                    contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
+                    mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
+                }
             }
         });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -248,14 +294,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public void onChange(boolean selfChange, Uri uri) {
             //do stuff on UI thread
-            Log.d(MainActivity.class.getName(),"Changed observed at "+uri);
+            Log.d(MainActivity.class.getName(),"Change observed at "+uri);
 
+            setDate();
             //getContentResolver().query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
             mCursorAdapter.swapCursor(getContentResolver().query(StockPriceContentProvider.CONTENT_URI, null, null, null, null));
-
-            String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-            mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
         }
+    }
+
+    private void setDate(){
+        first_image = null;
+
+        mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
     }
 
     public static Account createSyncAccount(Context context) {
@@ -324,7 +376,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_profile) {
+        if (id == R.id.nav_home) {
+
+        } else if (id == R.id.nav_profile) {
 
         } else if (id == R.id.nav_favorites) {
             Intent i = new Intent(this, FavoriteActivity.class);

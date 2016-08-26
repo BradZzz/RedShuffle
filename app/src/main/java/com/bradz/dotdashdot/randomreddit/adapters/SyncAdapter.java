@@ -37,18 +37,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String AUTHORITY = Statics.CONTENTPROVIIDER;
     private static final String STOCKS_TABLE = "stocks";
+    private static RequestQueue queue;
+
     public static final Uri SYMBOLS_CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + STOCKS_TABLE + "/symbols");
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mResolver = context.getContentResolver();
+        if (queue == null) {
+            queue = Volley.newRequestQueue(getContext());
+        }
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(SyncAdapter.class.getName(),"Starting sync");
         //mResolver.query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
-        mResolver.delete(StockPriceContentProvider.CONTENT_URI,null,null);
+        //mResolver.delete(StockPriceContentProvider.CONTENT_URI,null,null);
 
         //getPortfolioStocks();
         getRandomBadSubs();
@@ -63,10 +68,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }*/
 
     private void getRandomBadSubs(){
-        RequestQueue queue = Volley.newRequestQueue(getContext());
-
-        //https://www.reddit.com/r/subreddit/new.json?sort=new
-
         String stockUrl = "https://www.reddit.com/r/random.json";
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
@@ -128,19 +129,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         } else {*/
-            for (int i = 0; i < threads.size(); i++) {
-                //checkCursor.moveToPosition(i);
-                Log.i("Inserting", threads.get(i).getTitle() + ":" + threads.get(i).getUrl() + ":"
-                        + threads.get(i).getVotes() + ":" + sub + ":"
-                        + threads.get(i).getImage());
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(StockDBHelper.COLUMN_TITLE, threads.get(i).getTitle());
-                contentValues.put(StockDBHelper.COLUMN_URL, threads.get(i).getUrl());
-                contentValues.put(StockDBHelper.COLUMN_VOTES, threads.get(i).getVotes());
-                contentValues.put(StockDBHelper.COLUMN_SUB, sub);
-                contentValues.put(StockDBHelper.COLUMN_IMAGE, threads.get(i).getImage());
-                mResolver.insert(StockPriceContentProvider.CONTENT_URI, contentValues);
-            }
+        mResolver.delete(StockPriceContentProvider.CONTENT_URI,null,null);
+        for (int i = 0; i < threads.size(); i++) {
+            //checkCursor.moveToPosition(i);
+            Log.i("Inserting", threads.get(i).getTitle() + ":" + threads.get(i).getUrl() + ":"
+                    + threads.get(i).getVotes() + ":" + sub + ":"
+                    + threads.get(i).getImage());
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(StockDBHelper.COLUMN_TITLE, threads.get(i).getTitle());
+            contentValues.put(StockDBHelper.COLUMN_URL, threads.get(i).getUrl());
+            contentValues.put(StockDBHelper.COLUMN_VOTES, threads.get(i).getVotes());
+            contentValues.put(StockDBHelper.COLUMN_SUB, sub);
+            contentValues.put(StockDBHelper.COLUMN_IMAGE, threads.get(i).getImage());
+            mResolver.insert(StockPriceContentProvider.CONTENT_URI, contentValues);
+        }
         //}
         //checkCursor.close();
     }

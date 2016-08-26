@@ -14,6 +14,10 @@ public class TABLE_SUB {
         db.execSQL("delete from "+ StockDBHelper.TABLE_SUBS);
     }
 
+    public static void delete(SQLiteDatabase db, String selection) {
+        db.execSQL("delete from " + StockDBHelper.TABLE_SUBS + " WHERE " + selection);
+    }
+
     public static long add(SQLiteDatabase db, ContentValues values) {
 
         String sub = values.getAsString(StockDBHelper.COLUMN_SUB);
@@ -28,14 +32,6 @@ public class TABLE_SUB {
         cursor.close();
         db.close();
         return rowId;
-    }
-
-    public static long upsert(SQLiteDatabase db, ContentValues values, String selection){
-        int updated = updateBySymbol(db, values, selection);
-        if (updated == 0){
-            return add(db, values);
-        }
-        return updated;
     }
 
     public static int updateById(SQLiteDatabase db,String id, ContentValues values) {

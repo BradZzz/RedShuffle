@@ -36,7 +36,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.bradz.dotdashdot.randomreddit.utils.AutoResizeTextView android:id="@+id/text1"
+            <com.bradz.dotdashdot.randomreddit.utils.AutoResizeTextView
+                android:id="@+id/text1"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="8dp"
