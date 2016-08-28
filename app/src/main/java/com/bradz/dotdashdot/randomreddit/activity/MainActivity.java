@@ -28,11 +28,14 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +51,7 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private CursorAdapter mCursorAdapter;
     ContentResolver mResolver;
+    private Context self;
 
     private TextView mUpdatedTextView;
     private String TAG = this.getClass().getCanonicalName();
@@ -69,17 +73,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private View titleToolbar;
     private TextView tView;
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        self = this;
 
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
         subredditpreferences = getSharedPreferences(Statics.CURRENTSUB, Context.MODE_PRIVATE);
 
         initToolbar();
-        initButtons();
+        //initButtons();
         initWidgets();
         initActionBar();
 
@@ -91,8 +97,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI,null,null,null,null);
 
         tView = ((TextView) titleToolbar.findViewById(R.id.title));
-
-        setDate();
 
         mCursorAdapter = new CursorAdapter(this,existingStocksCursor,0) {
             @Override
@@ -151,12 +155,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         startActivity(i);
                     }
                 });
+
+                //setDescription();
             }
         };
 
 
-        ListView listView = (ListView) findViewById(R.id.stock_price_list);
+        listView = (ListView) findViewById(R.id.stock_price_list);
         listView.setAdapter(mCursorAdapter);
+
+        setDate();
         decideSync();
     }
 
@@ -196,12 +204,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void startSync(){
         Log.i(TAG,"startSync");
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-
-        //Bundle settingsBundle = new Bundle();
-        //settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        //settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-        //ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
         ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,true);
         ContentResolver.addPeriodicSync(mAccount, AUTHORITY, Bundle.EMPTY, 60);
     }
@@ -211,24 +213,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 0);
         ContentResolver.cancelSync(mAccount, AUTHORITY);
-    }
-
-    private void initButtons(){
-        Button reroll = (Button) findViewById(R.id.reroll);
-        reroll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(getApplicationContext(), "Rerolling...", Toast.LENGTH_SHORT).show();
-
-                ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-                ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,false);
-
-                Bundle settingsBundle = new Bundle();
-                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-                ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-            }
-        });
     }
 
     private void initWidgets(){
@@ -253,8 +237,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fab_fav = (FloatingActionButton) findViewById(R.id.fab_fav);
+        fab_fav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Sub added to favorites", Snackbar.LENGTH_LONG).setAction("Action", null).show();
@@ -269,8 +253,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
 
                     String publicDesc = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
+                    String description = subredditpreferences.getString(Statics.CURRENTSUB_DESCRIPTION,"");
                     if (!publicDesc.equals("")) {
                         contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, publicDesc);
+                    } else if (!description.equals("")) {
+                        contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, description);
                     }
 
                     Boolean nsfw = subredditpreferences.getBoolean(Statics.CURRENTSUB_NSFW,false);
@@ -279,6 +266,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis() % 1000));
                     mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
                 }
+            }
+        });
+
+        FloatingActionButton fab_reroll = (FloatingActionButton) findViewById(R.id.fab_reroll);
+        fab_reroll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Rerolling...", Toast.LENGTH_SHORT).show();
+
+                ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+                ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,false);
+
+                Bundle settingsBundle = new Bundle();
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+
+                Animation animation = AnimationUtils.loadAnimation(self, R.anim.rotate_center);
+                view.startAnimation(animation);
             }
         });
 
@@ -319,13 +325,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
         mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
+        setDescription();
+    }
 
+    private void setDescription(){
         String description_pref = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
+        TextView description_text = (TextView) findViewById(R.id.description_text);
+        ScrollView description_scroll = (ScrollView) findViewById(R.id.description_scroll);
+
+        Log.i("Description",description_pref);
 
         if (!description_pref.equals("")) {
-            TextView description_text = (TextView) findViewById(R.id.description_text);
+            description_text.setVisibility(View.VISIBLE);
             description_text.setText(description_pref);
+            //if (!description_pref.equals(description_text.getText().toString())) {
+                description_text.setText(description_pref);
+            //}
+        } else {
+            description_text.setVisibility(View.GONE);
         }
+
+        description_scroll.smoothScrollTo(0,0);
+        listView.smoothScrollToPosition(0);
     }
 
     public static Account createSyncAccount(Context context) {

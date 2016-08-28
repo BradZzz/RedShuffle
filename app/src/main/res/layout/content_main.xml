@@ -13,8 +13,9 @@
     tools:showIn="@layout/app_bar_main">
 
     <ScrollView
+        android:id="@+id/description_scroll"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="60dp"
         android:layout_margin="5dp">
         <TextView
             android:id="@+id/description_text"
@@ -27,37 +28,31 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/reroll"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reroll"
-            android:enabled="true" />
-
-        <android.support.v7.widget.SwitchCompat
-            android:id="@+id/switch_compat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:checked="true"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/updated_text"
-            android:textAlignment="textStart"
-            android:textSize="14sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="start|center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/updated_text"
+                android:textAlignment="textStart"
+                android:textSize="12sp"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switch_compat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:checked="true"/>
+
+        </LinearLayout>
 
         <ListView
             android:id="@+id/stock_price_list"

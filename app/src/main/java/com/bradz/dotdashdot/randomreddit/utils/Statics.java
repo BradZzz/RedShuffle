@@ -35,8 +35,5 @@ public class Statics {
         for (int key : keys) {
             stringMap.put(key,self.getResources().getString(key));
         }
-        //String mystring = context.getResources().getString(R.string.mystring);
     }
-    //String mystring = getResources().getString(R.string.mystring);
-    //public static String CONTENT_PROVIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 }
