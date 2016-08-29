@@ -53,12 +53,25 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(SyncAdapter.class.getName(),"Starting sync");
-        getRandomBadSub();
+        String sub = "";
+        try {
+            sub = extras.getString("subreddit");
+        } catch (NullPointerException e ) {
+            sub = "https://www.reddit.com/r/random/about.json";
+        } finally {
+            if (sub == null) {
+                sub = "https://www.reddit.com/r/random/about.json";
+            }
+        }
+
+        Log.i("This Sub","This Sub: " + sub);
+
+        getRandomBadSub(sub);
 
     }
 
-    private void getRandomBadSub(){
-        String subUrl = "https://www.reddit.com/r/random/about.json";
+    private void getRandomBadSub(String subUrl){
+        //String subUrl = "https://www.reddit.com/r/random/about.json";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, subUrl, (JSONObject) null, // here
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -70,6 +83,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     data.getString("public_description"),
                                     data.getString("description"),
                                     data.getString("title"),
+                                    data.getInt("subscribers"),
                                     data.getString("header_title"),
                                     Boolean.valueOf(data.getString("over18"))
                             );
@@ -79,6 +93,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             editor.putString(Statics.CURRENTSUB_DESCRIPTION,sub.getDescription());
                             editor.putString(Statics.CURRENTSUB_PUBLICDESCRIPTION,sub.getPublic_description());
                             editor.putString(Statics.CURRENTSUB_TITLE,sub.getTitle());
+                            editor.putInt(Statics.CURRENTSUB_SUBSCRIBERS,sub.getSubscribers());
                             editor.putString(Statics.CURRENTSUB_HEADERTITLE,sub.getHeader_title());
                             editor.putBoolean(Statics.CURRENTSUB_NSFW,sub.isNsfw());
                             editor.apply();

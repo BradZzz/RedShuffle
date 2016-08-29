@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void initWidgets(){
         SwitchCompat switchCompat = (SwitchCompat) findViewById(R.id.switch_compat);
-        switchCompat.setChecked(sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE, true));
+        switchCompat.setChecked(sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE, false));
         switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -241,30 +241,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab_fav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Sub added to favorites", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                //Snackbar.make(view, "Sub added to favorites", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+
+                Toast.makeText(getApplicationContext(), "Sub added to favorites", Toast.LENGTH_SHORT).show();
 
                 if (tView != null && !tView.getText().toString().isEmpty()) {
                     ContentValues contentValues = new ContentValues();
-                    contentValues.put(StockDBHelper.COLUMN_SUB, tView.getText().toString().replace("/", ""));
+
+                    String sub = tView.getText().toString().replace("/", "");
+
+                    contentValues.put(StockDBHelper.COLUMN_SUB, sub);
                     if (first_image != null) {
                         contentValues.put(StockDBHelper.COLUMN_IMAGE, first_image);
                     }
                     contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
                     contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
 
-                    String publicDesc = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
-                    String description = subredditpreferences.getString(Statics.CURRENTSUB_DESCRIPTION,"");
+                    String title = subredditpreferences.getString(Statics.CURRENTSUB_TITLE,"");
+                    contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, title);
+
+                    /*String publicDesc = getDescription();
                     if (!publicDesc.equals("")) {
                         contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, publicDesc);
-                    } else if (!description.equals("")) {
-                        contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, description);
-                    }
+                    }*/
 
                     Boolean nsfw = subredditpreferences.getBoolean(Statics.CURRENTSUB_NSFW,false);
                     contentValues.put(StockDBHelper.COLUMN_NSFW, nsfw);
 
+                    int subscribers = subredditpreferences.getInt(Statics.CURRENTSUB_SUBSCRIBERS,0);
+                    contentValues.put(StockDBHelper.COLUMN_USERS, subscribers);
+
                     contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis() % 1000));
                     mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
+
+                    Animation animation = AnimationUtils.loadAnimation(self, R.anim.expand_contract);
+                    view.startAnimation(animation);
                 }
             }
         });
@@ -328,8 +339,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setDescription();
     }
 
+    private String getDescription(){
+        String publicDesc = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
+        String description = subredditpreferences.getString(Statics.CURRENTSUB_DESCRIPTION,"");
+        String title = subredditpreferences.getString(Statics.CURRENTSUB_TITLE,"");
+
+        Log.i("getDescription","publicDesc: " + publicDesc);
+        Log.i("getDescription","description: " + description);
+        Log.i("getDescription","title: " + title);
+
+        if (!publicDesc.equals("")) {
+            return publicDesc;
+        } else if (!description.equals("")) {
+            return description;
+        } else {
+            return title;
+        }
+    }
+
     private void setDescription(){
-        String description_pref = subredditpreferences.getString(Statics.CURRENTSUB_PUBLICDESCRIPTION,"");
+        String description_pref = getDescription();
         TextView description_text = (TextView) findViewById(R.id.description_text);
         ScrollView description_scroll = (ScrollView) findViewById(R.id.description_scroll);
 

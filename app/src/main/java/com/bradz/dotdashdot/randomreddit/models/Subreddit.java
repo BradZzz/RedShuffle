@@ -9,14 +9,17 @@ public class Subreddit {
     private String description;
     private String title;
     private String header_title;
+    private int subscribers;
     private boolean nsfw;
 
-    public Subreddit(String display_name, String public_description, String description, String title, String header_title, boolean nsfw){
+    public Subreddit(String display_name, String public_description, String description, String title,
+                     int subscribers, String header_title, boolean nsfw){
         this.display_name = display_name;
         this.public_description = public_description;
         this.description = description;
         this.title = title;
         this.header_title = header_title;
+        this.subscribers = subscribers;
         this.nsfw = nsfw;
     }
 
@@ -66,5 +69,13 @@ public class Subreddit {
 
     public void setPublic_description(String public_description) {
         this.public_description = public_description;
+    }
+
+    public int getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(int subscribers) {
+        this.subscribers = subscribers;
     }
 }

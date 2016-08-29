@@ -20,6 +20,7 @@ public class Statics {
     public static String CURRENTSUB_PUBLICDESCRIPTION = "public_description";
     public static String CURRENTSUB_DESCRIPTION = "description";
     public static String CURRENTSUB_TITLE = "title";
+    public static String CURRENTSUB_SUBSCRIBERS = "subscribers";
     public static String CURRENTSUB_HEADERTITLE = "header_title";
     public static String CURRENTSUB_NSFW = "nsfw";
 

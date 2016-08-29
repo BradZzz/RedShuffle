@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,11 +51,20 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
     ContentResolver mResolver;
     private String TAG = this.getClass().getCanonicalName();
     SharedPreferences sharedpreferences;
+    public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
+    private Account mAccount;
+    // Account type
+    public static final String ACCOUNT_TYPE = "example.com";
+    // Account
+    public static final String ACCOUNT = "default_account";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
+
+        mAccount = createSyncAccount(this);
+
         initToolbar();
         mResolver = getContentResolver();
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
@@ -68,7 +78,9 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
                 TextView sub = (TextView) view.findViewById(R.id.sub);
-                TextView seen = (TextView) view.findViewById(R.id.seen);
+                TextView titleText = (TextView) view.findViewById(R.id.title);
+                TextView nsfwText = (TextView) view.findViewById(R.id.nsfw);
+                TextView usersText = (TextView) view.findViewById(R.id.users);
 
                 ImageView sub_image = (ImageView) view.findViewById(R.id.sub_image);
                 sub_image.setClipToOutline(true);
@@ -76,12 +88,27 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
                 view.setBackgroundResource(android.R.color.background_light);
 
                 final String subreddit = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
-                int seenSub = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_SEEN));
+                String title = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_DESCRIPTION));
+                int users = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_USERS));
+                int nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
+                //long nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
                 String image = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_IMAGE));
 
                 sub.setText(subreddit);
-                String seenS = "Seen: "+seenSub;
-                seen.setText(seenS);
+                if (nsfw > 0) {
+                    nsfwText.setVisibility(View.VISIBLE);
+                    nsfwText.setTextColor(Color.RED);
+                    nsfwText.setText("nsfw");
+                } else {
+                    nsfwText.setVisibility(View.GONE);
+                }
+
+                String usersString = "Users: "+users;
+                usersText.setText(usersString);
+
+                titleText.setText(title);
+                //String seenS = "Seen: "+seenSub;
+                //seen.setText(seenS);
 
                 Ion.with(sub_image)
                         .placeholder(R.drawable.reddit_logo)
@@ -113,6 +140,22 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
                                 }
                             });
                         alertDialog2.show();
+                    }
+                });
+
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+                        ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,false);
+
+                        Bundle settingsBundle = new Bundle();
+                        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                        settingsBundle.putString("subreddit", "https://www.reddit.com/r/" + subreddit + "/about.json");
+                        //"https://www.reddit.com/r/random/about.json";
+                        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+                        finish();
                     }
                 });
             }
@@ -191,5 +234,33 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public static Account createSyncAccount(Context context) {
+        // Create the account type and default account
+        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
+        // Get an instance of the Android account manager
+        AccountManager accountManager = (AccountManager) context.getSystemService(ACCOUNT_SERVICE);
+
+        Log.i("createSyncAccount","Creating Account");
+
+        /*
+         * Add the account and account type, no password or user data
+         * If successful, return the Account object, otherwise report an error.
+         */
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+          /*
+           * If you don't set android:syncable="true" in
+           * in your <provider> element in the manifest,
+           * then call context.setIsSyncable(account, AUTHORITY, 1)
+           * here.
+           */
+        } else {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
+        }
+        return newAccount;
     }
 }
