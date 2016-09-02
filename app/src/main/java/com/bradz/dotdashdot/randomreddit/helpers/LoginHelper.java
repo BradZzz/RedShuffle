@@ -2,6 +2,7 @@ package com.bradz.dotdashdot.randomreddit.helpers;
 
 import android.content.SharedPreferences;
 import android.support.design.widget.NavigationView;
+import android.util.Log;
 
 import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
@@ -10,10 +11,13 @@ import com.bradz.dotdashdot.randomreddit.utils.Statics;
  * Created by Mauve3 on 9/1/16.
  */
 public class LoginHelper {
-    public static  boolean checkLogin(SharedPreferences sharedpreferences, NavigationView navView){
+    public static boolean checkLogin(SharedPreferences sharedpreferences, NavigationView navView){
         Long currentTime  = System.currentTimeMillis();
         Long expires = sharedpreferences.getLong(Statics.SHAREDSETTINGS_REDDITEXPIRES, currentTime);
-        if (currentTime > expires) {
+
+        Log.i("CheckLogin","Expires: " + expires + ":" + currentTime);
+
+        if (expires > currentTime) {
             setLogIn(navView);
             return true;
         } else {
@@ -23,15 +27,19 @@ public class LoginHelper {
     }
 
     public static void setLogIn(NavigationView navView){
+        Log.i("CheckLogin","setLogIn");
+
         navView.getMenu().findItem(R.id.nav_login).setVisible(false);
         navView.getMenu().findItem(R.id.nav_logout).setVisible(true);
         navView.getMenu().findItem(R.id.nav_profile).setVisible(true);
     }
 
     public static void setLogOut(SharedPreferences sharedpreferences, NavigationView navView){
-        sharedpreferences.edit().remove(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN).apply();
-        sharedpreferences.edit().remove(Statics.SHAREDSETTINGS_REDDITEXPIRES).apply();
-        sharedpreferences.edit().remove(Statics.SHAREDSETTINGS_REDDITREFRESHTOKEN).apply();
+        Log.i("CheckLogin","setLogOut");
+
+        //sharedpreferences.edit().remove(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN).apply();
+        //sharedpreferences.edit().remove(Statics.SHAREDSETTINGS_REDDITEXPIRES).apply();
+        //sharedpreferences.edit().remove(Statics.SHAREDSETTINGS_REDDITREFRESHTOKEN).apply();
 
         navView.getMenu().findItem(R.id.nav_login).setVisible(true);
         navView.getMenu().findItem(R.id.nav_logout).setVisible(false);

@@ -41,9 +41,14 @@ public class Statics {
     public static String REDDIT_REDIRECT_URL = "https://immersiveandroid.com/callback";
     public static String REDDIT_SCOPE = "subscribe account identity";
 
+    //RedditApi
+    public static String REDDIT_API_BASEURL = "https://oauth.reddit.com";
+    public static String REDDIT_API_PROFILEURL = "/api/v1/me";
+
     //RequestCodes
     public static int REDDIT_LOGIN1 = 1337;
     public static int REDDIT_PROFILE = 1400;
+    public static int REDDIT_PROFILE_PREFS = 1401;
 
     public static String CONTENTPROVIIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 

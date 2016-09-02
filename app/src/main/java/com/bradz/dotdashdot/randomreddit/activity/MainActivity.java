@@ -124,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     String refresh_token = jsonObject.getString("refresh_token");
                     long expire_millis = request_time + (expires_in * 1000);
 
+                    //Log.i("","Expires: " + expire_millis + " - now: " + System.currentTimeMillis());
+
                     if (sharedpreferences != null){
                         SharedPreferences.Editor editor = sharedpreferences.edit();
                         editor.putString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN, access_token);
@@ -200,9 +202,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     outline.setBackground(getResources().getDrawable(R.drawable.black_border));
                 }
 
-                Log.i("Subreddit","Sub: " + sub);
-                Log.i("Subreddit","Image: " + image);
-                Log.i("Subreddit","NSFW: " + nsfw);
+                //Log.i("Subreddit","Sub: " + sub);
+                //Log.i("Subreddit","Image: " + image);
+                //Log.i("Subreddit","NSFW: " + nsfw);
 
                 if (first_image == null && image != null && !image.isEmpty() && image.contains("http")) {
                     first_image = image;

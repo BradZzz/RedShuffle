@@ -16,7 +16,9 @@ import android.os.RemoteException;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -90,38 +92,6 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         }
     };
 
-
-    /*@Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-
-        mApp = ((ParentApplication) getApplicationContext());
-        sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
-        navView = (NavigationView) findViewById(R.id.nav_view);
-    }*/
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.i("onStart","init");
-        if (!mServiceBound) {
-            Intent intent = new Intent(this, RequestService.class);
-            startService(intent);
-            bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        }
-        LoginHelper.checkLogin(sharedpreferences, navView);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mServiceBound) {
-            unbindService(mServiceConnection);
-            mServiceBound = false;
-        }
-    }
-
     public ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -138,6 +108,20 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             mServiceBound = true;
         }
     };
+
+    public void initToolbar(){
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        navView = (NavigationView) findViewById(R.id.nav_view);
+        navView.setNavigationItemSelectedListener(this);
+    }
 
     @Override
     public void onBackPressed() {
