@@ -9,15 +9,21 @@
         <item
             android:id="@+id/nav_profile"
             android:icon="@drawable/ic_face"
-            android:title="Profile" />
+            android:title="Profile"
+            android:visible="false"/>
         <item
             android:id="@+id/nav_favorites"
             android:icon="@drawable/ic_favorite"
             android:title="Favorites" />
         <item
+            android:id="@+id/nav_login"
+            android:icon="@drawable/ic_power_settings"
+            android:title="Login" />
+        <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_power_settings"
-            android:title="Logout" />
+            android:title="Logout"
+            android:visible="false"/>
     </group>
 
     <item android:title="Communicate">
@@ -27,9 +33,9 @@
                 android:icon="@drawable/ic_menu_share"
                 android:title="Share" />
             <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:id="@+id/nav_donate"
+                android:icon="@drawable/ic_attach_money"
+                android:title="Donate" />
         </menu>
     </item>
 

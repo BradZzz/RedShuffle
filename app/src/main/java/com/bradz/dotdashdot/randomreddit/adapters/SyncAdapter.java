@@ -40,6 +40,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private SharedPreferences sharedpreferences;
     private static RequestQueue queue;
+    private String TAG = getClass().getCanonicalName();
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -57,15 +58,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             sub = extras.getString("subreddit");
         } catch (NullPointerException e ) {
-            sub = "https://www.reddit.com/r/random/about.json";
+            Log.e(TAG, e.getMessage());
         } finally {
             if (sub == null) {
                 sub = "https://www.reddit.com/r/random/about.json";
             }
         }
-
         Log.i("This Sub","This Sub: " + sub);
-
+        queue.getCache().clear();
         getRandomBadSub(sub);
 
     }
@@ -76,6 +76,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.i("onResponse", "Responded");
                         try {
                             JSONObject data = response.getJSONObject("data");
                             Subreddit sub = new Subreddit(
@@ -100,7 +101,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                             getRandomBadSubs(sub);
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.getMessage());
                         }
                     }
                 },
@@ -153,7 +154,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             }
                             updateStockInfo(threads,sub);
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.getMessage());
                         }
                     }
                 },
@@ -182,7 +183,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             contentValues.put(StockDBHelper.COLUMN_NSFW, threads.get(i).isNsfw());
             contentValues.put(StockDBHelper.COLUMN_FULL_IMAGE, threads.get(i).getFull_image());
-            contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis() % 1000));
+            contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis()));
 
             mResolver.insert(StockPriceContentProvider.CONTENT_URI, contentValues);
         }

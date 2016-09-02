@@ -4,24 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activity.MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:context=".activity.FavoriteActivity"
+    tools:showIn="@layout/app_bar_favorite">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/subreddit"
             android:textAlignment="textStart"
             android:textSize="24sp"
-            android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/drawer_tab2"/>
@@ -33,9 +34,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="4px"
+            android:layout_marginTop="4dp"
+            android:background="@color/dividerColor"/>
+
         <ListView
             android:id="@+id/stock_price_list"
-            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>

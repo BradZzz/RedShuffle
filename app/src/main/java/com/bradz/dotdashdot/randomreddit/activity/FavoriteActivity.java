@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,8 @@ import com.bradz.dotdashdot.randomreddit.utils.Statics;
 import com.koushikdutta.ion.Ion;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class FavoriteActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -77,9 +80,9 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
 
             @Override
             public void bindView(View view, Context context, Cursor cursor) {
-                TextView sub = (TextView) view.findViewById(R.id.sub);
+                final TextView sub = (TextView) view.findViewById(R.id.sub);
                 TextView titleText = (TextView) view.findViewById(R.id.title);
-                TextView nsfwText = (TextView) view.findViewById(R.id.nsfw);
+                //TextView nsfwText = (TextView) view.findViewById(R.id.nsfw);
                 TextView usersText = (TextView) view.findViewById(R.id.users);
 
                 ImageView sub_image = (ImageView) view.findViewById(R.id.sub_image);
@@ -89,22 +92,39 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
 
                 final String subreddit = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
                 String title = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_DESCRIPTION));
-                int users = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_USERS));
+                //int users = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_USERS));
                 int nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
-                //long nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
+                //int nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
                 String image = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_IMAGE));
+                String created = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_CREATED));
+                //int nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
+
+                if (nsfw > 0) {
+                    LinearLayout outline = (LinearLayout) view.findViewById(R.id.image_outline);
+                    outline.setBackground(getResources().getDrawable(R.drawable.red_border));
+                }
 
                 sub.setText(subreddit);
-                if (nsfw > 0) {
+                /*if (nsfw > 0) {
                     nsfwText.setVisibility(View.VISIBLE);
                     nsfwText.setTextColor(Color.RED);
                     nsfwText.setText("nsfw");
                 } else {
                     nsfwText.setVisibility(View.GONE);
-                }
+                }*/
 
-                String usersString = "Users: "+users;
-                usersText.setText(usersString);
+                /*String usersString = "Users: "+users;
+                usersText.setText(usersString);*/
+
+                SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yy HH:mm:ss");//dd/MM/yyyy
+                Date now = new Date(Long.valueOf(created));
+                String strDate = sdfDate.format(now);
+
+                //Calendar calendar = Calendar.getInstance();
+                //calendar.setTimeInMillis(Long.valueOf(created));
+
+                //String createdString = calendar.getTime().toString();
+                usersText.setText(strDate);
 
                 titleText.setText(title);
                 //String seenS = "Seen: "+seenSub;
@@ -117,7 +137,7 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
                         //.animateIn(fadeInAnimation)
                         .load(image);
 
-                ImageView remove = (ImageView) view.findViewById(R.id.remove_fav);
+                View remove = view.findViewById(R.id.remove_fav);
                 remove.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -140,6 +160,14 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
                                 }
                             });
                         alertDialog2.show();
+                    }
+                });
+
+                View subscribe = view.findViewById(R.id.subscribe_sub);
+                subscribe.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(getApplicationContext(), "This subscribes to the subreddit: " + subreddit, Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -202,9 +230,9 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        /*if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }
@@ -224,10 +252,12 @@ public class FavoriteActivity extends AppCompatActivity implements NavigationVie
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);*/
         } else if (id == R.id.nav_logout) {
-
+            Intent i = new Intent(this, LoginActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivityForResult(i, 1337);
         } else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_donate) {
 
         }
 

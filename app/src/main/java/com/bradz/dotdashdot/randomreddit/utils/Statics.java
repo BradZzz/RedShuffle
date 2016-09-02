@@ -12,9 +12,16 @@ import java.util.Map;
  */
 public class Statics {
 
+    //Shared Preferences
     public static String SHAREDSETTINGS = "randomreddit.settings";
     public static String SHAREDSETTINGS_AUTOUPDATE = "auto";
 
+    //Reddit Shared Preferences
+    public static String SHAREDSETTINGS_REDDITACCESSTOKEN = "reddit_access_token";
+    public static String SHAREDSETTINGS_REDDITEXPIRES = "reddit_token_expires";
+    public static String SHAREDSETTINGS_REDDITREFRESHTOKEN = "reddit_refresh_token";
+
+    //DB Tables
     public static String CURRENTSUB = "randomreddit.currentsub";
     public static String CURRENTSUB_DISPLAYNAME = "display_name";
     public static String CURRENTSUB_PUBLICDESCRIPTION = "public_description";
@@ -24,6 +31,19 @@ public class Statics {
     public static String CURRENTSUB_HEADERTITLE = "header_title";
     public static String CURRENTSUB_NSFW = "nsfw";
 
+    //Google Billing
+    public static String PURCHASES_DONATION_DOLLAR = "donation_1.00";
+    public static String DEVELOPER_CALLBACK_ID = "ThisIsMySuperSecretCallback";
+
+    //RedditOauth
+    public static String REDDIT_BASE_URL = "https://www.reddit.com/api/v1/authorize.compact";
+    public static String REDDIT_CLIENT_ID = "uiSl9J06xcbGlw";
+    public static String REDDIT_REDIRECT_URL = "https://immersiveandroid.com/callback";
+    public static String REDDIT_SCOPE = "subscribe account identity";
+
+    //RequestCodes
+    public static int REDDIT_LOGIN1 = 1337;
+    public static int REDDIT_PROFILE = 1400;
 
     public static String CONTENTPROVIIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 
