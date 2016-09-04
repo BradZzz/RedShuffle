@@ -211,9 +211,15 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            finish();
+            Intent i = new Intent(this, MainActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+            //finish();
         } else if (id == R.id.nav_profile) {
-
+            Intent i = new Intent(this, ProfileActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
+            //finish();
         } else if (id == R.id.nav_favorites) {
             Intent i = new Intent(this, FavoriteActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
