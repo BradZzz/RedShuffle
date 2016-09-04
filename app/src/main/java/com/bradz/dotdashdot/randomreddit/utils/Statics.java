@@ -1,9 +1,7 @@
 package com.bradz.dotdashdot.randomreddit.utils;
 
-import android.app.Activity;
 import android.content.Context;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,16 +37,18 @@ public class Statics {
     public static String REDDIT_BASE_URL = "https://www.reddit.com/api/v1/authorize.compact";
     public static String REDDIT_CLIENT_ID = "uiSl9J06xcbGlw";
     public static String REDDIT_REDIRECT_URL = "https://immersiveandroid.com/callback";
-    public static String REDDIT_SCOPE = "subscribe account identity";
+    public static String REDDIT_SCOPE = "mysubreddits subscribe account identity";
 
     //RedditApi
     public static String REDDIT_API_BASEURL = "https://oauth.reddit.com";
     public static String REDDIT_API_PROFILEURL = "/api/v1/me";
+    public static String REDDIT_API_SUBREDDITSURL = "/subreddits/mine.json";
 
     //RequestCodes
     public static int REDDIT_LOGIN1 = 1337;
     public static int REDDIT_PROFILE = 1400;
     public static int REDDIT_PROFILE_PREFS = 1401;
+    public static int REDDIT_SUBREDDITS = 1500;
 
     public static String CONTENTPROVIIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 

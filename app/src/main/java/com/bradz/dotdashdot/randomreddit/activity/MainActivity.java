@@ -2,7 +2,6 @@ package com.bradz.dotdashdot.randomreddit.activity;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -15,32 +14,28 @@ import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.util.DebugUtils;
-import android.support.v7.widget.SwitchCompat;
-import android.util.Base64;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
@@ -627,25 +622,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-
+            Log.i("Main Activity","nav_home");
         } else if (id == R.id.nav_profile) {
+            Log.i("Main Activity","nav_profile");
             Intent i = new Intent(this, ProfileActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
         } else if (id == R.id.nav_favorites) {
+            Log.i("Main Activity","nav_favorites");
             Intent i = new Intent(this, FavoriteActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
         } else if (id == R.id.nav_logout) {
+            Log.i("Main Activity","nav_logout");
             Toast.makeText( getBaseContext(), "Logged out", Toast.LENGTH_SHORT).show();
             LoginHelper.setLogOut(sharedpreferences, navView);
         } else if (id == R.id.nav_login) {
+            Log.i("Main Activity","nav_login");
             Intent i = new Intent(this, LoginActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivityForResult(i, Statics.REDDIT_LOGIN1);
         } else if (id == R.id.nav_share) {
-
+            Log.i("Main Activity","nav_share");
         } else if (id == R.id.nav_donate) {
+            Log.i("Main Activity","nav_donate");
             try {
                 Bundle buyIntentBundle = mApp.getBillingConnection().getBuyIntent(3, getPackageName(),
                         Statics.PURCHASES_DONATION_DOLLAR, "inapp", Statics.DEVELOPER_CALLBACK_ID);

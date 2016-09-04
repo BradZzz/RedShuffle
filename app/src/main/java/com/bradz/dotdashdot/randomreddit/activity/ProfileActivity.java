@@ -1,65 +1,39 @@
 package com.bradz.dotdashdot.randomreddit.activity;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.RemoteException;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
+import com.bradz.dotdashdot.randomreddit.adapters.SubredditAdapter;
 import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
 import com.bradz.dotdashdot.randomreddit.helpers.LoginHelper;
-import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
-import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
-import com.koushikdutta.ion.Ion;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
-import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class ProfileActivity extends NavigationActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ProfileActivity extends NavigationActivity {
 
     public final Handler profileHandler = new Handler() {
 
@@ -68,7 +42,7 @@ public class ProfileActivity extends NavigationActivity implements NavigationVie
             Log.i("ProfileActivity","Message handled here!");
 
             int type = msg.getData().getInt("type");
-            long request_time = msg.getData().getLong("request_time");
+            //long request_time = msg.getData().getLong("request_time");
             String response = msg.getData().getString("response");
             Boolean error = msg.getData().getBoolean("error");
 
@@ -90,16 +64,13 @@ public class ProfileActivity extends NavigationActivity implements NavigationVie
                     int inbox_count = jsonObject.getInt("inbox_count");
 
                     TextView profileId = (TextView) findViewById(R.id.profile_id);
-                    profileId.setText(id);
-
-                    //TextView profileName = (TextView) findViewById(R.id.profile_name);
-                    //profileName.setText(name);
+                    profileId.setText("ID: " + id);
 
                     setActionBar(name);
 
                     TextView profileCreated = (TextView) findViewById(R.id.profile_created);
                     String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date(created * 1000));
-                    profileCreated.setText("Online Since: " + currentDateTimeString);
+                    profileCreated.setText("Since: " + currentDateTimeString);
 
                     TextView profileLink = (TextView) findViewById(R.id.profile_link);
                     profileLink.setText(""+link_karma);
@@ -107,8 +78,8 @@ public class ProfileActivity extends NavigationActivity implements NavigationVie
                     TextView profileComment = (TextView) findViewById(R.id.profile_comment);
                     profileComment.setText(""+comment_karma);
 
-                    TextView profileEight = (TextView) findViewById(R.id.profile_over_18);
-                    profileEight.setText(over_18 ? "Over 18" : "Under 18");
+                    /*TextView profileEight = (TextView) findViewById(R.id.profile_over_18);
+                    profileEight.setText(over_18 ? "Over 18" : "Under 18");*/
 
                     TextView profileInbox = (TextView) findViewById(R.id.profile_inbox);
                     profileInbox.setText(""+inbox_count);
@@ -116,17 +87,54 @@ public class ProfileActivity extends NavigationActivity implements NavigationVie
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            } else if (Statics.REDDIT_PROFILE == type && error) {
+                Toast.makeText(getBaseContext(), "Error showing user profile", Toast.LENGTH_SHORT).show();
+            }
+
+            if (Statics.REDDIT_SUBREDDITS == type && !error) {
+                JSONObject jsonObject = null;
+                List<JSONObject> jsonlisty = new ArrayList<>();
+
+                try {
+                    jsonObject = new JSONObject(response);
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    JSONArray children = data.getJSONArray("children");
+                    for (int i = 0; i < children.length(); i++) {
+                        jsonlisty.add(children.getJSONObject(i).getJSONObject("data"));
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                adapty = new SubredditAdapter(self, jsonlisty);
+
+                listy.invalidate();
+                listy.setAdapter(adapty);
+
+            } else if (Statics.REDDIT_SUBREDDITS == type && error) {
+                Toast.makeText(getBaseContext(), "Error showing subreddits", Toast.LENGTH_SHORT).show();
             }
         }
     };
+
+    SubredditAdapter adapty;
+    ListView listy;
+    Context self;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+        self = this;
 
         mApp = ((ParentApplication) getApplicationContext());
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
+
+        listy = (ListView) findViewById(R.id.profile_listy);
+        adapty = new SubredditAdapter(this, new ArrayList<JSONObject>());
+        listy.setAdapter(adapty);
 
         initToolbar();
 
@@ -169,6 +177,9 @@ public class ProfileActivity extends NavigationActivity implements NavigationVie
                 headers.put("Authorization", "bearer " + access_token);
                 mRequestService.createGetRequest(this, profileHandler,
                         Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_PROFILEURL, new HashMap<String, String>(), headers, Statics.REDDIT_PROFILE);
+
+                mRequestService.createGetRequest(this, profileHandler,
+                        Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSURL, new HashMap<String, String>(), headers, Statics.REDDIT_SUBREDDITS);
             } else {
                 Toast.makeText(getBaseContext(), "Please login to use this feature", Toast.LENGTH_SHORT).show();
                 finish();
