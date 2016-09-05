@@ -1,5 +1,7 @@
 package com.bradz.dotdashdot.randomreddit.activity;
 
+import android.accounts.Account;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -95,9 +97,31 @@ public class ProfileActivity extends NavigationActivity {
                 JSONObject jsonObject = null;
                 List<JSONObject> jsonlisty = new ArrayList<>();
 
+                String after = "";
+                String before = "";
+
                 try {
                     jsonObject = new JSONObject(response);
+
                     JSONObject data = jsonObject.getJSONObject("data");
+
+                    /*
+                        If after, send out new request, if before, append to listy
+                     */
+
+                    if (!data.isNull("before")) {
+                        before = data.getString("before");
+                        Log.i(TAG,"Before: " + before);
+                    }
+
+                    if (!data.isNull("after")) {
+                        after = data.getString("after");
+                        Log.i(TAG,"After: " + after);
+                        final Map<String,String> params = new HashMap<>();
+                        params.put("after", after);
+                        callSubreddit(params);
+                    }
+
                     JSONArray children = data.getJSONArray("children");
                     for (int i = 0; i < children.length(); i++) {
                         jsonlisty.add(children.getJSONObject(i).getJSONObject("data"));
@@ -108,10 +132,17 @@ public class ProfileActivity extends NavigationActivity {
                     e.printStackTrace();
                 }
 
-                adapty = new SubredditAdapter(self, jsonlisty);
+                if (listy.getChildCount() == 0) {
+                    adapty = new SubredditAdapter(self, jsonlisty, mAccount);
 
-                listy.invalidate();
-                listy.setAdapter(adapty);
+                    listy.invalidate();
+                    listy.setAdapter(adapty);
+                } else {
+                    //add to list and invalidate
+                    adapty.addItems(jsonlisty);
+                    listy.invalidate();
+                    listy.setAdapter(adapty);
+                }
 
             } else if (Statics.REDDIT_SUBREDDITS == type && error) {
                 Toast.makeText(getBaseContext(), "Error showing subreddits", Toast.LENGTH_SHORT).show();
@@ -121,19 +152,22 @@ public class ProfileActivity extends NavigationActivity {
 
     SubredditAdapter adapty;
     ListView listy;
-    Context self;
+    Activity self;
+    private String TAG = getClass().getCanonicalName();
+    private Account mAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         self = this;
+        mAccount = createSyncAccount(this);
 
         mApp = ((ParentApplication) getApplicationContext());
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
 
         listy = (ListView) findViewById(R.id.profile_listy);
-        adapty = new SubredditAdapter(this, new ArrayList<JSONObject>());
+        adapty = new SubredditAdapter(this, new ArrayList<JSONObject>(), mAccount);
         listy.setAdapter(adapty);
 
         initToolbar();
@@ -178,13 +212,35 @@ public class ProfileActivity extends NavigationActivity {
                 mRequestService.createGetRequest(this, profileHandler,
                         Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_PROFILEURL, new HashMap<String, String>(), headers, Statics.REDDIT_PROFILE);
 
-                mRequestService.createGetRequest(this, profileHandler,
-                        Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSURL, new HashMap<String, String>(), headers, Statics.REDDIT_SUBREDDITS);
+                callSubreddit(new HashMap<String, String>(), headers);
+
             } else {
                 Toast.makeText(getBaseContext(), "Please login to use this feature", Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
+    }
+
+    private void callSubreddit(Map<String, String> params){
+        String sParams = "?";
+        for (String param : params.keySet()) {
+            sParams += param + "=" + params.get(param) + "&";
+        }
+
+        final Map<String,String> headers = new HashMap<>();
+        String access_token = sharedpreferences.getString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN,"");
+        if (!access_token.equals("")) {
+            headers.put("Authorization", "bearer " + access_token);
+            mRequestService.createGetRequest(this, profileHandler,
+                    Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSURL + sParams, params, headers, Statics.REDDIT_SUBREDDITS);
+        } else {
+            Toast.makeText(getBaseContext(), "Error Connecting to profile. Please login again", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void callSubreddit(Map<String, String> params, Map<String, String> headers){
+        mRequestService.createGetRequest(this, profileHandler,
+                Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSURL, params, headers, Statics.REDDIT_SUBREDDITS);
     }
 
     private void setActionBar(String title){

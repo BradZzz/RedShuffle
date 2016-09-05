@@ -1,13 +1,14 @@
 package com.bradz.dotdashdot.randomreddit.activity;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,22 +32,47 @@ import com.koushikdutta.ion.Ion;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FavoriteActivity extends NavigationActivity {
+
+    public final Handler profileHandler = new Handler() {
+
+        public void handleMessage(Message msg) {
+
+            Log.i("ProfileActivity","Message handled here!");
+
+            int type = msg.getData().getInt("type");
+            //long request_time = msg.getData().getLong("request_time");
+            String response = msg.getData().getString("response");
+            Boolean error = msg.getData().getBoolean("error");
+
+            Log.i("responseHandler","Type: " + type);
+            Log.i("responseHandler","Response: " + response);
+            Log.i("responseHandler","Error: " + error);
+
+            //If the user has logged into the app, save the token into shared preferences
+            if (Statics.REDDIT_SUBREDDIT_SUBSCRIBE == type && !error) {
+                Toast.makeText(getApplicationContext(), "Subscribed to subreddit!", Toast.LENGTH_SHORT).show();
+            } else if (Statics.REDDIT_SUBREDDIT_SUBSCRIBE == type && error) {
+                Toast.makeText(getApplicationContext(), "Error subscribing to subreddit!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
+    private Context self;
     private CursorAdapter mCursorAdapter;
     ContentResolver mResolver;
     private String TAG = this.getClass().getCanonicalName();
     public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
     private Account mAccount;
-    // Account type
-    public static final String ACCOUNT_TYPE = "example.com";
-    // Account
-    public static final String ACCOUNT = "default_account";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
+        self = this;
 
         mAccount = createSyncAccount(this);
 
@@ -152,7 +178,22 @@ public class FavoriteActivity extends NavigationActivity {
                 subscribe.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(getApplicationContext(), "This subscribes to the subreddit: " + subreddit, Toast.LENGTH_SHORT).show();
+                        final Map<String, String> params = new HashMap<>();
+                        params.put("action", "sub");
+                        params.put("sr_name", subreddit);
+
+                        final Map<String,String> headers = new HashMap<>();
+                        String access_token = sharedpreferences.getString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN,"");
+                        if (!access_token.equals("")) {
+                            headers.put("Authorization", "bearer " + access_token);
+
+                            Log.i("Favorites","Sub url: " + Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSUBSCRIBE);
+
+                            mRequestService.createPostRequest(self, profileHandler,
+                                    Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSUBSCRIBE, params, headers, Statics.REDDIT_SUBREDDIT_SUBSCRIBE);
+                        } else {
+                            Toast.makeText(getBaseContext(), "Please login to use the subscribe feature", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 
@@ -180,24 +221,6 @@ public class FavoriteActivity extends NavigationActivity {
 
     private Cursor getFavorites(){
         return getContentResolver().query(StockPriceContentProvider.CONTENT_URI_SUBS,null,null,null,null);
-    }
-
-    public static Account createSyncAccount(Context context) {
-
-        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
-        AccountManager accountManager = (AccountManager) context.getSystemService(ACCOUNT_SERVICE);
-
-        Log.i("createSyncAccount","Creating Account");
-
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-
-        } else {
-            /*
-             * The account exists or some other error occurred. Log this, report it,
-             * or handle it internally.
-             */
-        }
-        return newAccount;
     }
 
     @Override

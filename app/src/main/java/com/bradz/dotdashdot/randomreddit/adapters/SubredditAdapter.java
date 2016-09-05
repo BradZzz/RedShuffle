@@ -1,8 +1,11 @@
 package com.bradz.dotdashdot.randomreddit.adapters;
 
-import android.content.Context;
+import android.accounts.Account;
+import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
+import com.bradz.dotdashdot.randomreddit.utils.Statics;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,16 +27,20 @@ import java.util.List;
  */
 public class SubredditAdapter extends BaseAdapter {
 
+    public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
+
     private static String ERROR = "Parsing Error";
 
     List<JSONObject> subs;
     LayoutInflater inflater;
-    Context self;
+    Activity self;
+    Account mAccount;
 
-    public SubredditAdapter(Context self, List<JSONObject> subs){
+    public SubredditAdapter(Activity self, List<JSONObject> subs, Account mAccount){
         this.self = self;
         inflater = LayoutInflater.from(self);
         this.subs = subs;
+        this.mAccount = mAccount;
     }
 
     @Override
@@ -50,6 +58,10 @@ public class SubredditAdapter extends BaseAdapter {
         return 0;
     }
 
+    public void addItems(List<JSONObject> newSubs){
+        subs.addAll(newSubs);
+    }
+
     @Override
     public View getView(int position, View view, ViewGroup parent) {
 
@@ -61,11 +73,12 @@ public class SubredditAdapter extends BaseAdapter {
 
         TextView subby = (TextView) convertView.findViewById(R.id.text_subreddit);
         View remove = convertView.findViewById(R.id.remove_subreddit);
+        String display_name = "";
 
         JSONObject jsonObject = subs.get(position);
         try {
             Boolean over_18 = jsonObject.getBoolean("over18");
-            String display_name = jsonObject.getString("display_name");
+            display_name = jsonObject.getString("display_name");
 
             if (over_18) {
                 subby.setTextColor(Color.RED);
@@ -101,6 +114,24 @@ public class SubredditAdapter extends BaseAdapter {
                             }
                         });
                 alertDialog2.show();
+            }
+        });
+
+        final String subName = display_name;
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+                ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,false);
+
+                Bundle settingsBundle = new Bundle();
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+                settingsBundle.putString("subreddit", "https://www.reddit.com/r/" + subName + "/about.json");
+                //"https://www.reddit.com/r/random/about.json";
+                ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+                self.finish();
             }
         });
 

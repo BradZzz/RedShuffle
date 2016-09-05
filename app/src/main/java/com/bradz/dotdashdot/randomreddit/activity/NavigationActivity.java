@@ -1,7 +1,10 @@
 package com.bradz.dotdashdot.randomreddit.activity;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
@@ -214,16 +217,17 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             Intent i = new Intent(this, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
-            //finish();
+            finish();
         } else if (id == R.id.nav_profile) {
             Intent i = new Intent(this, ProfileActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
-            //finish();
+            finish();
         } else if (id == R.id.nav_favorites) {
             Intent i = new Intent(this, FavoriteActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
+            finish();
         } else if (id == R.id.nav_logout) {
             Toast.makeText( getBaseContext(), "Logged out", Toast.LENGTH_SHORT).show();
             LoginHelper.setLogOut(sharedpreferences, navView);
@@ -249,5 +253,23 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public static Account createSyncAccount(Context context) {
+
+        Account newAccount = new Account(Statics.SYNC_ACCOUNT, Statics.SYNC_ACCOUNT_TYPE);
+        AccountManager accountManager = (AccountManager) context.getSystemService(ACCOUNT_SERVICE);
+
+        Log.i("createSyncAccount","Creating Account");
+
+        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
+
+        } else {
+            /*
+             * The account exists or some other error occurred. Log this, report it,
+             * or handle it internally.
+             */
+        }
+        return newAccount;
     }
 }

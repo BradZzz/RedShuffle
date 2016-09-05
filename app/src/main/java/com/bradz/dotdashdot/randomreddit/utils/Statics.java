@@ -10,6 +10,10 @@ import java.util.Map;
  */
 public class Statics {
 
+    //Sync adapter
+    public static final String SYNC_ACCOUNT = "default_account";
+    public static final String SYNC_ACCOUNT_TYPE = "example.com";
+
     //Shared Preferences
     public static String SHAREDSETTINGS = "randomreddit.settings";
     public static String SHAREDSETTINGS_AUTOUPDATE = "auto";
@@ -43,12 +47,15 @@ public class Statics {
     public static String REDDIT_API_BASEURL = "https://oauth.reddit.com";
     public static String REDDIT_API_PROFILEURL = "/api/v1/me";
     public static String REDDIT_API_SUBREDDITSURL = "/subreddits/mine.json";
+    public static String REDDIT_API_SUBREDDITSUBSCRIBE = "/api/subscribe";
 
     //RequestCodes
     public static int REDDIT_LOGIN1 = 1337;
     public static int REDDIT_PROFILE = 1400;
     public static int REDDIT_PROFILE_PREFS = 1401;
     public static int REDDIT_SUBREDDITS = 1500;
+    public static int REDDIT_SUBREDDIT_SUBSCRIBE = 1501;
+    public static int REDDIT_SUBREDDIT_UNSUBSCRIBE = 1502;
 
     public static String CONTENTPROVIIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 

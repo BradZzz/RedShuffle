@@ -37,9 +37,7 @@ public class StockPriceContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, TABLE_THREADS, THREAD);
         sURIMatcher.addURI(AUTHORITY, TABLE_THREADS + "/#", THREAD_ID);
         sURIMatcher.addURI(AUTHORITY, "flush", FLUSH);
-
         sURIMatcher.addURI(AUTHORITY, TABLE_SUBS, SUB);
-        //sURIMatcher.addURI(AUTHORITY, STOCK_PRICES_TABLE + "/portfolio", STOCK_PORTFOLIO);
     }
 
     private StockDBHelper dbHelper;
