@@ -27,47 +27,61 @@
             android:layout_height="wrap_content" />
     </ScrollView>
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/loadable_content"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:gravity="start|center"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/updated_text"
-                android:textAlignment="textStart"
-                android:textSize="12sp"
-                android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="30dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:gravity="start|center"
+                android:orientation="horizontal">
 
-            <android.support.v7.widget.SwitchCompat
-                android:id="@+id/switch_compat"
+                <TextView
+                    android:id="@+id/updated_text"
+                    android:textAlignment="textStart"
+                    android:textSize="12sp"
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/switch_compat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="4"
+                    android:checked="true"/>
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:checked="true"/>
+                android:layout_height="4px"
+                android:layout_marginTop="4dp"
+                android:background="@color/dividerColor"/>
 
+            <ListView
+                android:id="@+id/stock_price_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
         </LinearLayout>
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="4px"
-            android:layout_marginTop="4dp"
-            android:background="@color/dividerColor"/>
-
-        <ListView
-            android:id="@+id/stock_price_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/load_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible"
+            app:indicatorColor="@color/colorPrimary"
+            app:indicatorName="BallPulseIndicator"
+            />
+    </FrameLayout>
 
 </LinearLayout>

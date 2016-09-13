@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "91631820735",
+    "project_id": "firebase-randomreddit"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:91631820735:android:f9f28bc019e55f9d",
+        "android_client_info": {
+          "package_name": "com.bradz.dotdashdot.randomreddit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdxhO-bU8IOT2jHzgb-8jb4IKfpgYvMCU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-82505121-2"
+          }
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

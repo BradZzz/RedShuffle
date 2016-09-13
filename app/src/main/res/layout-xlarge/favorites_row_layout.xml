@@ -32,9 +32,9 @@
 
         <LinearLayout
             android:orientation="vertical"
+            android:layout_marginStart="25dp"
+            android:layout_width="0dip"
             android:layout_weight="1"
-            android:layout_marginStart="10dp"
-            android:layout_width="0dp"
             android:layout_height="match_parent">
 
             <com.bradz.dotdashdot.randomreddit.utils.AutoResizeTextView

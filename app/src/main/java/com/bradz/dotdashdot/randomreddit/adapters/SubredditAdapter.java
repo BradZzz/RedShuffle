@@ -143,6 +143,7 @@ public class SubredditAdapter extends BaseAdapter {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Toast.makeText(self.getApplicationContext(), "Removing Favorite...", Toast.LENGTH_SHORT).show();
+
                                 final Map<String, String> params = new HashMap<>();
                                 params.put("action", "unsub");
                                 params.put("sr_name", subName);

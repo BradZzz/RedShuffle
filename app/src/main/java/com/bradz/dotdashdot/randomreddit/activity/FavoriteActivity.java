@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FavoriteActivity extends NavigationActivity {
+    private String TAG = this.getClass().getCanonicalName();
 
     public final Handler profileHandler = new Handler() {
 
@@ -63,7 +64,6 @@ public class FavoriteActivity extends NavigationActivity {
     private Context self;
     private CursorAdapter mCursorAdapter;
     ContentResolver mResolver;
-    private String TAG = this.getClass().getCanonicalName();
     public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
     private Account mAccount;
 
@@ -72,6 +72,9 @@ public class FavoriteActivity extends NavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
         self = this;
+
+        ParentApplication application = (ParentApplication) getApplication();
+        mTracker = application.getDefaultTracker();
 
         mAccount = createSyncAccount(this);
 
@@ -158,6 +161,9 @@ public class FavoriteActivity extends NavigationActivity {
                         alertDialog2.setPositiveButton("Confirm",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
+
+                                    writeEventAnalytics("Sub","Fav - Remove",subreddit);
+
                                     getContentResolver().delete(StockPriceContentProvider.CONTENT_URI_SUBS,"sub = '" + subreddit + "'",null);
                                     Toast.makeText(getApplicationContext(), "Removed Favorite", Toast.LENGTH_SHORT).show();
                                     mCursorAdapter.swapCursor(getFavorites());
@@ -177,6 +183,9 @@ public class FavoriteActivity extends NavigationActivity {
                 subscribe.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+
+                        writeEventAnalytics("Sub","Subscribe",subreddit);
+
                         final Map<String, String> params = new HashMap<>();
                         params.put("action", "sub");
                         params.put("sr_name", subreddit);
@@ -231,6 +240,12 @@ public class FavoriteActivity extends NavigationActivity {
             startService(intent);
             bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        writeScreenAnalytics(TAG,"onResume");
     }
 
     @Override

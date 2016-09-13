@@ -32,6 +32,8 @@ import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
 import com.bradz.dotdashdot.randomreddit.helpers.LoginHelper;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,6 +52,7 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
     public RequestService mRequestService;
     public boolean mServiceBound = false;
     public ParentApplication mApp;
+    public Tracker mTracker;
 
     public final Handler responseHandler = new Handler() {
 
@@ -95,6 +98,43 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             }
         }
     };
+
+    public void writeScreenAnalytics(String TAG, String message){
+        Log.i("writeScreenAnalytics", "Screen log. TAG: " + TAG + " message: " + message);
+        //System.out.println("Screen log. TAG: " + TAG + " message: " + message);
+        mTracker.setScreenName(TAG + ": " +  message);
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    public void writeEventAnalytics(String category, String action, String label, Long value){
+        Log.i("writeEventAnalytics", "Setting event category: " + category + " action: " + action);
+        //System.out.println("Setting event category: " + category + " action: " + action);
+        mTracker.send(new HitBuilders.EventBuilder()
+                .setCategory(category)
+                .setAction(action)
+                .setLabel(label)
+                .setValue(value)
+                .build());
+    }
+
+    public void writeEventAnalytics(String category, String action, String label){
+        Log.i("writeEventAnalytics", "Setting event category: " + category + " action: " + action);
+        //System.out.println("Setting event category: " + category + " action: " + action);
+        mTracker.send(new HitBuilders.EventBuilder()
+                .setCategory(category)
+                .setAction(action)
+                .setLabel(label)
+                .build());
+    }
+
+    public void writeEventAnalytics(String category, String action){
+        Log.i("writeEventAnalytics", "Setting event category: " + category + " action: " + action);
+        //System.out.println("Setting event category: " + category + " action: " + action);
+        mTracker.send(new HitBuilders.EventBuilder()
+                .setCategory(category)
+                .setAction(action)
+                .build());
+    }
 
     public ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -235,9 +275,13 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             startActivity(i);
             finish();
         } else if (id == R.id.nav_logout) {
+            writeEventAnalytics("App","Logout");
+
             Toast.makeText( getBaseContext(), "Logged out", Toast.LENGTH_SHORT).show();
             LoginHelper.setLogOut(sharedpreferences, navView);
         } else if (id == R.id.nav_login) {
+            writeEventAnalytics("App","Login");
+
             Intent i = new Intent(this, LoginActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivityForResult(i, Statics.REDDIT_LOGIN1);

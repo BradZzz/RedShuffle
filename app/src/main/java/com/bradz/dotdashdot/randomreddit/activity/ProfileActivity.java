@@ -25,6 +25,7 @@ import com.bradz.dotdashdot.randomreddit.helpers.LoginHelper;
 import com.bradz.dotdashdot.randomreddit.models.ProfileSub;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ProfileActivity extends NavigationActivity {
+    private String TAG = this.getClass().getCanonicalName();
 
     public final Handler profileHandler = new Handler() {
 
@@ -98,6 +100,9 @@ public class ProfileActivity extends NavigationActivity {
             //If the user has logged into the app, save the token into shared preferences
             if (Statics.REDDIT_SUBREDDIT_UNSUBSCRIBE == type) {
                 if (!error) {
+                    load_icon.setVisibility(View.VISIBLE);
+                    writeEventAnalytics("Sub","Profile - Remove");
+
                     adapty.clear();
                     listy.invalidate();
 
@@ -133,6 +138,8 @@ public class ProfileActivity extends NavigationActivity {
                         final Map<String,String> params = new HashMap<>();
                         params.put("after", after);
                         callSubreddit(params);
+                    } else {
+                        load_icon.setVisibility(View.GONE);
                     }
                     JSONArray children = data.getJSONArray("children");
                     for (int i = 0; i < children.length(); i++) {
@@ -164,17 +171,20 @@ public class ProfileActivity extends NavigationActivity {
     SubredditAdapter adapty;
     ListView listy;
     Activity self;
-    private String TAG = getClass().getCanonicalName();
     private Account mAccount;
     private ScrollView scrolly;
+    private AVLoadingIndicatorView load_icon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
         self = this;
-        mAccount = createSyncAccount(this);
 
+        ParentApplication application = (ParentApplication) getApplication();
+        mTracker = application.getDefaultTracker();
+
+        mAccount = createSyncAccount(this);
         mApp = ((ParentApplication) getApplicationContext());
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
 
@@ -182,6 +192,9 @@ public class ProfileActivity extends NavigationActivity {
         adapty = new SubredditAdapter(this, new ArrayList<JSONObject>(), mAccount,
                 sharedpreferences, mRequestService, profileHandler);
         listy.setAdapter(adapty);
+
+        load_icon = (AVLoadingIndicatorView) findViewById(R.id.load_indicator);
+        load_icon.setVisibility(View.VISIBLE);
 
         initToolbar();
 
@@ -292,6 +305,12 @@ public class ProfileActivity extends NavigationActivity {
             startService(intent);
             bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        writeScreenAnalytics(TAG,"onResume");
     }
 
     @Override

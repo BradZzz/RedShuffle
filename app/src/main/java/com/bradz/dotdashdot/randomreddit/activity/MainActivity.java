@@ -46,17 +46,18 @@ import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
 import com.koushikdutta.ion.Ion;
+import com.wang.avi.AVLoadingIndicatorView;
 
 import java.text.DateFormat;
 import java.util.Date;
 
 public class MainActivity extends NavigationActivity {
-    private CursorAdapter mCursorAdapter;
-    ContentResolver mResolver;
-    private Context self;
-
-    private TextView mUpdatedTextView;
     private String TAG = this.getClass().getCanonicalName();
+    private CursorAdapter mCursorAdapter;
+    private ContentResolver mResolver;
+    private Context self;
+    private TextView mUpdatedTextView;
+    private AVLoadingIndicatorView load_icon;
 
     //private static final int CONTENTPROVIDER = R.string.CONTENTPROVIDER;
     //private static Statics statics;
@@ -84,6 +85,9 @@ public class MainActivity extends NavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         self = this;
+
+        ParentApplication application = (ParentApplication) getApplication();
+        mTracker = application.getDefaultTracker();
 
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
         subredditpreferences = getSharedPreferences(Statics.CURRENTSUB, Context.MODE_PRIVATE);
@@ -140,9 +144,10 @@ public class MainActivity extends NavigationActivity {
                 if (first_image == null && image != null && !image.isEmpty() && image.contains("http")) {
                     first_image = image;
                 }
-                if (tView != null && !tView.getText().equals(sub)) {
-                    String subby = "/" + sub;
+                String subby = "/" + sub;
+                if (tView != null && !tView.getText().equals(subby)) {
                     tView.setText(subby);
+                    writeEventAnalytics("Sub","New",sub);
                 }
                 text1.setText(title);
                 String voteString = "Votes: " + votes;
@@ -157,7 +162,7 @@ public class MainActivity extends NavigationActivity {
                     @Override
                     public void onClick(View view) {
                         Intent i = new Intent(Intent.ACTION_VIEW);
-                        String linkUrl = url;
+                        String linkUrl = url.replace("amp;","");
                         if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
                             linkUrl = "http://" + linkUrl;
                         }
@@ -187,6 +192,8 @@ public class MainActivity extends NavigationActivity {
                 //Algorithm to check if the last item is visible or not
                 final int lastItem = firstVisibleItem + visibleItemCount;
                 if(lastItem == totalItemCount){
+
+                    load_icon.setVisibility(View.VISIBLE);
 
                     Bundle settingsBundle = new Bundle();
                     settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
@@ -234,6 +241,12 @@ public class MainActivity extends NavigationActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        writeScreenAnalytics(TAG,"onResume");
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (mServiceBound) {
@@ -242,11 +255,11 @@ public class MainActivity extends NavigationActivity {
         }
     }
 
-    private void initRequestService(){
+    /*private void initRequestService(){
         Intent intent = new Intent(this, RequestService.class);
         startService(intent);
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
-    }
+    }*/
 
     private void initActionBar(){
         if (getActionBar() != null) {
@@ -272,7 +285,7 @@ public class MainActivity extends NavigationActivity {
     }
 
     private void decideSync(){
-        Boolean checked = sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,true);
+        Boolean checked = sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE,false);
         Log.i(TAG,"Checking: " + checked);
         if (checked){
             startSync();
@@ -290,12 +303,14 @@ public class MainActivity extends NavigationActivity {
 
     private void stopSync(){
         Log.i(TAG,"stopSync");
-
         ContentResolver.setIsSyncable(mAccount, AUTHORITY, 0);
         ContentResolver.cancelSync(mAccount, AUTHORITY);
     }
 
     private void initWidgets(){
+        load_icon = (AVLoadingIndicatorView) findViewById(R.id.load_indicator);
+        load_icon.setVisibility(View.GONE);
+
         SwitchCompat switchCompat = (SwitchCompat) findViewById(R.id.switch_compat);
         switchCompat.setChecked(sharedpreferences.getBoolean(Statics.SHAREDSETTINGS_AUTOUPDATE, false));
         switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -333,6 +348,8 @@ public class MainActivity extends NavigationActivity {
 
                 String sub = tView.getText().toString().replace("/", "");
 
+                writeEventAnalytics("Sub","Fav",sub);
+
                 contentValues.put(StockDBHelper.COLUMN_SUB, sub);
                 if (first_image != null) {
                     contentValues.put(StockDBHelper.COLUMN_IMAGE, first_image);
@@ -369,6 +386,8 @@ public class MainActivity extends NavigationActivity {
             public void onClick(View view) {
                 Toast.makeText(getApplicationContext(), "Rerolling...", Toast.LENGTH_SHORT).show();
 
+                writeEventAnalytics("App","Reroll");
+
                 ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
                 ContentResolver.setSyncAutomatically(mAccount,AUTHORITY,false);
 
@@ -404,6 +423,9 @@ public class MainActivity extends NavigationActivity {
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
+
+            load_icon.setVisibility(View.GONE);
+
             //do stuff on UI thread
             Log.d(MainActivity.class.getName(),"Change observed at "+uri);
 
@@ -486,9 +508,13 @@ public class MainActivity extends NavigationActivity {
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
         } else if (id == R.id.nav_logout) {
+            writeEventAnalytics("App","Logout");
+
             Toast.makeText( getBaseContext(), "Logged out", Toast.LENGTH_SHORT).show();
             LoginHelper.setLogOut(sharedpreferences, navView);
         } else if (id == R.id.nav_login) {
+            writeEventAnalytics("App","Login");
+
             Intent i = new Intent(this, LoginActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivityForResult(i, Statics.REDDIT_LOGIN1);
