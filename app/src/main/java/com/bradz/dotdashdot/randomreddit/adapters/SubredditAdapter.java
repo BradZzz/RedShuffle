@@ -4,9 +4,12 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +18,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
+import com.bradz.dotdashdot.randomreddit.models.ProfileSub;
+import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Mauve3 on 9/3/16.
@@ -35,12 +43,19 @@ public class SubredditAdapter extends BaseAdapter {
     LayoutInflater inflater;
     Activity self;
     Account mAccount;
+    SharedPreferences sharedpreferences;
+    RequestService mRequestService;
+    Handler profileHandler;
 
-    public SubredditAdapter(Activity self, List<JSONObject> subs, Account mAccount){
+    public SubredditAdapter(Activity self, List<JSONObject> subs, Account mAccount, SharedPreferences sharedpreferences,
+                            RequestService mRequestService, Handler profileHandler){
         this.self = self;
         inflater = LayoutInflater.from(self);
         this.subs = subs;
         this.mAccount = mAccount;
+        this.sharedpreferences = sharedpreferences;
+        this.mRequestService = mRequestService;
+        this.profileHandler = profileHandler;
     }
 
     @Override
@@ -60,6 +75,27 @@ public class SubredditAdapter extends BaseAdapter {
 
     public void addItems(List<JSONObject> newSubs){
         subs.addAll(newSubs);
+        Collections.sort(subs, new ProfileSub.SortBasedOnMessageId());
+    }
+
+    public void clear(){
+        subs.clear();
+    }
+
+    public void removeItem(String deletedSub){
+        int index = -1;
+        for (int i = 0; i< subs.size(); i++) {
+            try {
+                if (subs.get(i).getString("display_name").equalsIgnoreCase(deletedSub)){
+                    index = i;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        if (index != -1) {
+            subs.remove(index);
+        }
     }
 
     @Override
@@ -94,17 +130,35 @@ public class SubredditAdapter extends BaseAdapter {
             subby.setText(ERROR);
         }
 
+        final String subName = display_name;
+
         remove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder alertDialog2 = new AlertDialog.Builder(self);
                 alertDialog2.setTitle("Confirm Remove");
-                alertDialog2.setMessage("Are you sure you want remove this favorite?");
+                alertDialog2.setMessage("Are you sure you want remove this subreddit from your profile?");
                 alertDialog2.setIcon(R.drawable.ic_delete);
                 alertDialog2.setPositiveButton("Confirm",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(self.getApplicationContext(), "This will remove the favorite", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(self.getApplicationContext(), "Removing Favorite...", Toast.LENGTH_SHORT).show();
+                                final Map<String, String> params = new HashMap<>();
+                                params.put("action", "unsub");
+                                params.put("sr_name", subName);
+
+                                final Map<String,String> headers = new HashMap<>();
+                                String access_token = sharedpreferences.getString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN,"");
+                                if (!access_token.equals("")) {
+                                    headers.put("Authorization", "bearer " + access_token);
+
+                                    Log.i("Favorites","Sub url: " + Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSUBSCRIBE);
+
+                                    mRequestService.createPostRequest(self, profileHandler,
+                                            Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSUBSCRIBE, params, headers, Statics.REDDIT_SUBREDDIT_UNSUBSCRIBE);
+                                } else {
+                                    Toast.makeText(self.getBaseContext(), "Please login to use the subscribe feature", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         });
                 alertDialog2.setNegativeButton("Cancel",
@@ -116,8 +170,6 @@ public class SubredditAdapter extends BaseAdapter {
                 alertDialog2.show();
             }
         });
-
-        final String subName = display_name;
 
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override

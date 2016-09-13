@@ -23,7 +23,6 @@ import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
-import com.bradz.dotdashdot.randomreddit.helpers.LoginHelper;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
@@ -232,7 +231,6 @@ public class FavoriteActivity extends NavigationActivity {
             startService(intent);
             bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
-        LoginHelper.checkLogin(sharedpreferences, navView);
     }
 
     @Override

@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +22,7 @@ import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.adapters.SubredditAdapter;
 import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
 import com.bradz.dotdashdot.randomreddit.helpers.LoginHelper;
+import com.bradz.dotdashdot.randomreddit.models.ProfileSub;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
 
@@ -30,6 +32,7 @@ import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +58,6 @@ public class ProfileActivity extends NavigationActivity {
             //If the user has logged into the app, save the token into shared preferences
             if (Statics.REDDIT_PROFILE == type && !error) {
                 try {
-
                     JSONObject jsonObject = new JSONObject(response);
                     String id = jsonObject.getString("id");
                     String name = jsonObject.getString("name");
@@ -93,27 +95,38 @@ public class ProfileActivity extends NavigationActivity {
                 Toast.makeText(getBaseContext(), "Error showing user profile", Toast.LENGTH_SHORT).show();
             }
 
+            //If the user has logged into the app, save the token into shared preferences
+            if (Statics.REDDIT_SUBREDDIT_UNSUBSCRIBE == type) {
+                if (!error) {
+                    adapty.clear();
+                    listy.invalidate();
+
+                    final Map<String,String> headers = new HashMap<>();
+                    String access_token = sharedpreferences.getString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN,"");
+                    if (!access_token.equals("")) {
+                        headers.put("Authorization", "bearer " + access_token);
+                        callSubreddit(new HashMap<String, String>(), headers);
+                    }
+                    Toast.makeText(getApplicationContext(), "Successfully unsubscribed from subreddit!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Error unsubscribing to subreddit!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
             if (Statics.REDDIT_SUBREDDITS == type && !error) {
                 JSONObject jsonObject = null;
                 List<JSONObject> jsonlisty = new ArrayList<>();
 
                 String after = "";
-                String before = "";
+                //String before = "";
 
                 try {
                     jsonObject = new JSONObject(response);
-
                     JSONObject data = jsonObject.getJSONObject("data");
-
-                    /*
-                        If after, send out new request, if before, append to listy
-                     */
-
-                    if (!data.isNull("before")) {
+                    /*if (!data.isNull("before")) {
                         before = data.getString("before");
                         Log.i(TAG,"Before: " + before);
-                    }
-
+                    }*/
                     if (!data.isNull("after")) {
                         after = data.getString("after");
                         Log.i(TAG,"After: " + after);
@@ -121,20 +134,18 @@ public class ProfileActivity extends NavigationActivity {
                         params.put("after", after);
                         callSubreddit(params);
                     }
-
                     JSONArray children = data.getJSONArray("children");
                     for (int i = 0; i < children.length(); i++) {
                         jsonlisty.add(children.getJSONObject(i).getJSONObject("data"));
                     }
-
-
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
                 if (listy.getChildCount() == 0) {
-                    adapty = new SubredditAdapter(self, jsonlisty, mAccount);
-
+                    Collections.sort(jsonlisty, new ProfileSub.SortBasedOnMessageId());
+                    adapty = new SubredditAdapter(self, jsonlisty, mAccount,
+                            sharedpreferences, mRequestService, profileHandler);
                     listy.invalidate();
                     listy.setAdapter(adapty);
                 } else {
@@ -155,6 +166,7 @@ public class ProfileActivity extends NavigationActivity {
     Activity self;
     private String TAG = getClass().getCanonicalName();
     private Account mAccount;
+    private ScrollView scrolly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,7 +179,8 @@ public class ProfileActivity extends NavigationActivity {
         sharedpreferences = getSharedPreferences(Statics.SHAREDSETTINGS, Context.MODE_PRIVATE);
 
         listy = (ListView) findViewById(R.id.profile_listy);
-        adapty = new SubredditAdapter(this, new ArrayList<JSONObject>(), mAccount);
+        adapty = new SubredditAdapter(this, new ArrayList<JSONObject>(), mAccount,
+                sharedpreferences, mRequestService, profileHandler);
         listy.setAdapter(adapty);
 
         initToolbar();
@@ -191,6 +204,10 @@ public class ProfileActivity extends NavigationActivity {
             mServiceBound = true;
 
             initProfile();
+
+            if (!LoginHelper.checkLogin(sharedpreferences, navView)){
+                refreshLogin();
+            }
         }
     };
 
@@ -275,7 +292,6 @@ public class ProfileActivity extends NavigationActivity {
             startService(intent);
             bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
-        LoginHelper.checkLogin(sharedpreferences, navView);
     }
 
     @Override

@@ -32,6 +32,7 @@ public class TABLE_SUB {
         cursor.close();
         db.close();
         return rowId;
+
     }
 
     public static int updateById(SQLiteDatabase db,String id, ContentValues values) {
@@ -44,6 +45,11 @@ public class TABLE_SUB {
         int numRowsChanged = db.update(StockDBHelper.TABLE_SUBS, values, selection, null);
         db.close();
         return numRowsChanged;
+    }
+
+    public static boolean has(SQLiteDatabase db, String selection){
+        Cursor cursor = db.query(StockDBHelper.TABLE_SUBS, StockDBHelper.ALL_COLUMNS_SUBS, selection, null, null, null, null);
+        return cursor.getCount() > 0;
     }
 
     public static Cursor get(SQLiteDatabase db, String selection, String sortOrder){

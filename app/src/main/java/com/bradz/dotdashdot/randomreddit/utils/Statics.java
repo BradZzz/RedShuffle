@@ -32,6 +32,7 @@ public class Statics {
     public static String CURRENTSUB_SUBSCRIBERS = "subscribers";
     public static String CURRENTSUB_HEADERTITLE = "header_title";
     public static String CURRENTSUB_NSFW = "nsfw";
+    public static String CURRENTSUB_NEXT = "reddit_next";
 
     //Google Billing
     public static String PURCHASES_DONATION_DOLLAR = "donation_1.00";
@@ -42,6 +43,7 @@ public class Statics {
     public static String REDDIT_CLIENT_ID = "uiSl9J06xcbGlw";
     public static String REDDIT_REDIRECT_URL = "https://immersiveandroid.com/callback";
     public static String REDDIT_SCOPE = "mysubreddits subscribe account identity";
+    public static String REDDIT_REFRESH_URL = "https://www.reddit.com/api/v1/access_token";
 
     //RedditApi
     public static String REDDIT_API_BASEURL = "https://oauth.reddit.com";

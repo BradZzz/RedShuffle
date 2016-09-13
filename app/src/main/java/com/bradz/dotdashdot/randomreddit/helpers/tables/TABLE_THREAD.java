@@ -15,7 +15,18 @@ public class TABLE_THREAD {
     }
 
     public static long add(SQLiteDatabase db, ContentValues values) {
-        long rowId = db.replace(StockDBHelper.TABLE_THREADS, null, values);
+        String url = values.getAsString(StockDBHelper.COLUMN_URL);
+        Cursor cursor = get(db, StockDBHelper.COLUMN_URL + " = '" + url + "'", null);
+
+        long rowId = 0;
+        if (cursor.getCount() > 0) {
+            //cursor.moveToFirst();
+            //cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_ID));
+            //Log.i("add","adding url: " + url);
+        } else {
+            rowId = db.replace(StockDBHelper.TABLE_THREADS, null, values);
+        }
+        cursor.close();
         db.close();
         return rowId;
     }

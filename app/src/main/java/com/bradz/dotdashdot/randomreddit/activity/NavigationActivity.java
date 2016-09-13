@@ -73,14 +73,16 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                     JSONObject jsonObject = new JSONObject(response);
                     String access_token = jsonObject.getString("access_token");
                     int expires_in = jsonObject.getInt("expires_in");
-                    String refresh_token = jsonObject.getString("refresh_token");
+                    //String refresh_token = jsonObject.getString("refresh_token");
                     long expire_millis = request_time + (expires_in * 1000);
 
                     if (sharedpreferences != null){
                         SharedPreferences.Editor editor = sharedpreferences.edit();
                         editor.putString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN, access_token);
                         editor.putLong(Statics.SHAREDSETTINGS_REDDITEXPIRES, expire_millis);
-                        editor.putString(Statics.SHAREDSETTINGS_REDDITREFRESHTOKEN, refresh_token);
+                        if (!jsonObject.isNull("refresh_token")) {
+                            editor.putString(Statics.SHAREDSETTINGS_REDDITREFRESHTOKEN, jsonObject.getString("refresh_token"));
+                        }
                         editor.apply();
 
                         Toast.makeText(getBaseContext(), "Logged into account", Toast.LENGTH_SHORT).show();
@@ -108,6 +110,10 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             RequestService.MyBinder myBinder = (RequestService.MyBinder) service;
             mRequestService = myBinder.getService();
             mServiceBound = true;
+
+            if (!LoginHelper.checkLogin(sharedpreferences, navView)){
+                refreshLogin();
+            }
         }
     };
 
@@ -180,7 +186,7 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             if (mServiceBound) {
                 Log.i("onActivityResult","Contacting bound service");
                 mRequestService.createPostRequest(this, responseHandler,
-                        "https://www.reddit.com/api/v1/access_token", params, headers, requestCode);
+                        Statics.REDDIT_REFRESH_URL, params, headers, requestCode);
             } else {
                 Log.i("onActivityResult","No service bound");
             }
@@ -272,4 +278,34 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         }
         return newAccount;
     }
+
+    public void refreshLogin(){
+        Log.i("refreshLogin","Refreshing Login");
+
+        //If the user has a refresh token with an expired request token, we need to log into the user's account
+        String refresh = sharedpreferences.getString(Statics.SHAREDSETTINGS_REDDITREFRESHTOKEN, "");
+        if (!refresh.equals("")) {
+            Log.i("refreshLogin","Creating request...");
+
+            final Map<String,String> params = new HashMap<>();
+            params.put("grant_type", "refresh_token");
+            params.put("refresh_token", refresh);
+
+            final Map<String,String> headers = new HashMap<>();
+            try {
+                headers.put("Authorization", "Basic " + Base64.encodeToString((Statics.REDDIT_CLIENT_ID + ":").getBytes("UTF-8"), Base64.DEFAULT));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            if (mServiceBound) {
+                Log.i("onActivityResult","Contacting bound service");
+                mRequestService.createPostRequest(this, responseHandler,
+                        Statics.REDDIT_REFRESH_URL, params, headers, Statics.REDDIT_LOGIN1);
+            } else {
+                Log.i("onActivityResult","No service bound");
+            }
+        }
+    }
+
 }

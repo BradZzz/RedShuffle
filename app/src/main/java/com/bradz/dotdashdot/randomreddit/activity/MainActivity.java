@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AbsListView;
 import android.widget.CompoundButton;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
@@ -136,10 +137,6 @@ public class MainActivity extends NavigationActivity {
                     outline.setBackground(getResources().getDrawable(R.drawable.black_border));
                 }
 
-                //Log.i("Subreddit","Sub: " + sub);
-                //Log.i("Subreddit","Image: " + image);
-                //Log.i("Subreddit","NSFW: " + nsfw);
-
                 if (first_image == null && image != null && !image.isEmpty() && image.contains("http")) {
                     first_image = image;
                 }
@@ -154,8 +151,6 @@ public class MainActivity extends NavigationActivity {
                 Ion.with(sub_image)
                     .placeholder(R.drawable.reddit_logo)
                     .error(R.drawable.reddit_logo)
-                    //.animateLoad(spinAnimation)
-                    //.animateIn(fadeInAnimation)
                     .load(image);
 
                 view.setOnClickListener(new View.OnClickListener() {
@@ -178,8 +173,52 @@ public class MainActivity extends NavigationActivity {
 
         listView = (ListView) findViewById(R.id.stock_price_list);
         listView.setAdapter(mCursorAdapter);
+        listView.setOnScrollListener(new AbsListView.OnScrollListener(){
 
-        setDate();
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view,
+                                 int firstVisibleItem, int visibleItemCount,
+                                 int totalItemCount) {
+                //Algorithm to check if the last item is visible or not
+                final int lastItem = firstVisibleItem + visibleItemCount;
+                if(lastItem == totalItemCount){
+
+                    Bundle settingsBundle = new Bundle();
+                    settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+                    settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+                    String sub = subredditpreferences.getString(Statics.CURRENTSUB_DISPLAYNAME,"");
+                    String after = subredditpreferences.getString(Statics.CURRENTSUB_NEXT,"");
+
+                    //String sub = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
+
+                    if (!sub.equals("")) {
+                        settingsBundle.putString("subreddit", sub);
+                        if (!after.equals("")) {
+                            settingsBundle.putString("after", after);
+                        }
+
+                        // you have reached end of list, load more data
+                        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
+                        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, false);
+                        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+                    }
+                }
+            }
+        });
+        /*listView.setOnBottomReachedListener(new ScrollListView.OnBottomReachedListener() {
+            @Override
+            public void onBottomReached() {
+
+            }
+        });*/
+
+        setDate(true);
         decideSync();
     }
 
@@ -192,7 +231,6 @@ public class MainActivity extends NavigationActivity {
             startService(intent);
             bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         }
-        LoginHelper.checkLogin(sharedpreferences, navView);
     }
 
     @Override
@@ -286,42 +324,42 @@ public class MainActivity extends NavigationActivity {
         fab_fav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Snackbar.make(view, "Sub added to favorites", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+            //Snackbar.make(view, "Sub added to favorites", Snackbar.LENGTH_LONG).setAction("Action", null).show();
 
-                Toast.makeText(getApplicationContext(), "Sub added to favorites", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Sub added to favorites", Toast.LENGTH_SHORT).show();
 
-                if (tView != null && !tView.getText().toString().isEmpty()) {
-                    ContentValues contentValues = new ContentValues();
+            if (tView != null && !tView.getText().toString().isEmpty()) {
+                ContentValues contentValues = new ContentValues();
 
-                    String sub = tView.getText().toString().replace("/", "");
+                String sub = tView.getText().toString().replace("/", "");
 
-                    contentValues.put(StockDBHelper.COLUMN_SUB, sub);
-                    if (first_image != null) {
-                        contentValues.put(StockDBHelper.COLUMN_IMAGE, first_image);
-                    }
-                    contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
-                    contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
-
-                    String title = subredditpreferences.getString(Statics.CURRENTSUB_TITLE,"");
-                    contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, title);
-
-                    /*String publicDesc = getDescription();
-                    if (!publicDesc.equals("")) {
-                        contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, publicDesc);
-                    }*/
-
-                    Boolean nsfw = subredditpreferences.getBoolean(Statics.CURRENTSUB_NSFW,false);
-                    contentValues.put(StockDBHelper.COLUMN_NSFW, nsfw);
-
-                    int subscribers = subredditpreferences.getInt(Statics.CURRENTSUB_SUBSCRIBERS,0);
-                    contentValues.put(StockDBHelper.COLUMN_USERS, subscribers);
-
-                    contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis()));
-                    mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
-
-                    Animation animation = AnimationUtils.loadAnimation(self, R.anim.expand_contract);
-                    view.startAnimation(animation);
+                contentValues.put(StockDBHelper.COLUMN_SUB, sub);
+                if (first_image != null) {
+                    contentValues.put(StockDBHelper.COLUMN_IMAGE, first_image);
                 }
+                contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
+                contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
+
+                String title = subredditpreferences.getString(Statics.CURRENTSUB_TITLE,"");
+                contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, title);
+
+                /*String publicDesc = getDescription();
+                if (!publicDesc.equals("")) {
+                    contentValues.put(StockDBHelper.COLUMN_DESCRIPTION, publicDesc);
+                }*/
+
+                Boolean nsfw = subredditpreferences.getBoolean(Statics.CURRENTSUB_NSFW,false);
+                contentValues.put(StockDBHelper.COLUMN_NSFW, nsfw);
+
+                int subscribers = subredditpreferences.getInt(Statics.CURRENTSUB_SUBSCRIBERS,0);
+                contentValues.put(StockDBHelper.COLUMN_USERS, subscribers);
+
+                contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis()));
+                mResolver.insert(StockPriceContentProvider.CONTENT_URI_SUBS, contentValues);
+
+                Animation animation = AnimationUtils.loadAnimation(self, R.anim.expand_contract);
+                view.startAnimation(animation);
+            }
             }
         });
 
@@ -369,19 +407,25 @@ public class MainActivity extends NavigationActivity {
             //do stuff on UI thread
             Log.d(MainActivity.class.getName(),"Change observed at "+uri);
 
-            setDate();
+            Cursor cursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI,null,null,null,null);
+            Log.d(MainActivity.class.getName(),"Cursor count: "+cursor.getCount());
+            if (cursor.getCount() > 27) {
+                setDate(false);
+            } else {
+                setDate(true);
+            }
             //getContentResolver().query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
-            mCursorAdapter.swapCursor(getContentResolver().query(StockPriceContentProvider.CONTENT_URI, null, null, null, null));
+            mCursorAdapter.swapCursor(cursor);
         }
     }
 
-    private void setDate(){
+    private void setDate(boolean scroll){
         first_image = null;
 
         mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
         mUpdatedTextView.setText("Last updated: "+currentDateTimeString);
-        setDescription();
+        setDescription(scroll);
     }
 
     private String getDescription(){
@@ -402,7 +446,7 @@ public class MainActivity extends NavigationActivity {
         }
     }
 
-    private void setDescription(){
+    private void setDescription(boolean scroll){
         String description_pref = getDescription();
         TextView description_text = (TextView) findViewById(R.id.description_text);
         ScrollView description_scroll = (ScrollView) findViewById(R.id.description_scroll);
@@ -419,8 +463,10 @@ public class MainActivity extends NavigationActivity {
             description_text.setVisibility(View.GONE);
         }
 
-        description_scroll.smoothScrollTo(0,0);
-        listView.smoothScrollToPosition(0);
+        if (scroll) {
+            description_scroll.smoothScrollTo(0, 0);
+            listView.smoothScrollToPosition(0);
+        }
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
