@@ -17,3 +17,7 @@ Enjoy a near infinite source of topics and news at your fingertips! Simple and i
 <img src="./screens/screen04.png" width="400"/>
 <img src="./screens/screen05.png" width="400"/>
 <img src="./screens/screen06.png" width="400"/>
+
+## license
+
+MIT. Copyright (c) Brad Zimmerman
