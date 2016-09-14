@@ -12,10 +12,12 @@ import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 public class TABLE_SUB {
     public static void drop(SQLiteDatabase db) {
         db.execSQL("delete from "+ StockDBHelper.TABLE_SUBS);
+        db.close();
     }
 
     public static void delete(SQLiteDatabase db, String selection) {
         db.execSQL("delete from " + StockDBHelper.TABLE_SUBS + " WHERE " + selection);
+        db.close();
     }
 
     public static long add(SQLiteDatabase db, ContentValues values) {

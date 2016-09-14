@@ -24,13 +24,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="20dp"
-            android:text="ID: D76FV"/>
+            android:text="ID: Unknown"/>
         <LinearLayout
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="25dp"
-            android:layout_marginRight="20dp"
-            android:gravity="right"
+            android:layout_marginEnd="20dp"
+            android:gravity="end"
             android:orientation="horizontal">
             <TextView
                 android:id="@+id/profile_inbox"
@@ -38,7 +38,7 @@
                 android:textSize="18sp"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:text="17"/>
+                android:text="0"/>
             <ImageView
                 android:id="@+id/mail_icon"
                 android:layout_width="25dp"
@@ -66,7 +66,7 @@
                 android:textSize="18sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="108"/>
+                android:text="0"/>
             <TextView
                 android:id="@+id/profile_link_desc"
                 android:textAlignment="center"
@@ -88,7 +88,7 @@
                 android:textSize="18sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="57"/>
+                android:text="0"/>
             <TextView
                 android:id="@+id/profile_comment_desc"
                 android:textAlignment="center"
@@ -110,7 +110,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Since: December 18, 2010 05:03:01 AM"/>
+        android:text="Since: Unknown..."/>
 
     <View
         android:id="@+id/divider"

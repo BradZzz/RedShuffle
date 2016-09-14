@@ -1,29 +1,24 @@
 package com.bradz.dotdashdot.randomreddit.activity;
 
 import android.accounts.Account;
-import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -40,7 +35,6 @@ import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
-import com.bradz.dotdashdot.randomreddit.helpers.LoginHelper;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
@@ -78,6 +72,7 @@ public class MainActivity extends NavigationActivity {
     private View titleToolbar;
     private TextView tView;
     private ListView listView;
+    private View toggleDescription;
     //NavigationView navView;
 
     @Override
@@ -471,7 +466,25 @@ public class MainActivity extends NavigationActivity {
     private void setDescription(boolean scroll){
         String description_pref = getDescription();
         TextView description_text = (TextView) findViewById(R.id.description_text);
-        ScrollView description_scroll = (ScrollView) findViewById(R.id.description_scroll);
+        final ScrollView description_scroll = (ScrollView) findViewById(R.id.description_scroll);
+        final ImageView icon = (ImageView) findViewById(R.id.visibility_icon);
+
+        toggleDescription = findViewById(R.id.visibility_toggle);
+        toggleDescription.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (description_scroll.getVisibility() == View.GONE) {
+                    //Expand the view
+                    description_scroll.setVisibility(View.VISIBLE);
+                    icon.setBackgroundResource(R.drawable.ic_visibility_closed);
+                } else {
+                    //Collapse the view
+                    description_scroll.setVisibility(View.GONE);
+                    icon.setBackgroundResource(R.drawable.ic_visibility_open);
+                }
+            }
+        });
 
         Log.i("Description",description_pref);
 
@@ -491,7 +504,7 @@ public class MainActivity extends NavigationActivity {
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+    /*@SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -536,5 +549,5 @@ public class MainActivity extends NavigationActivity {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
+    }*/
 }

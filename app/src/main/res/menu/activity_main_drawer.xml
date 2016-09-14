@@ -26,12 +26,8 @@
             android:visible="false"/>
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Contribute">
         <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
             <item
                 android:id="@+id/nav_donate"
                 android:icon="@drawable/ic_attach_money"

@@ -263,30 +263,32 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
             Intent i = new Intent(this, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
-            finish();
+            //finish();
         } else if (id == R.id.nav_profile) {
             Intent i = new Intent(this, ProfileActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
-            finish();
+            //finish();
         } else if (id == R.id.nav_favorites) {
             Intent i = new Intent(this, FavoriteActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(i);
-            finish();
+            //finish();
         } else if (id == R.id.nav_logout) {
             writeEventAnalytics("App","Logout");
 
             Toast.makeText( getBaseContext(), "Logged out", Toast.LENGTH_SHORT).show();
             LoginHelper.setLogOut(sharedpreferences, navView);
+
+            Intent i = new Intent(this, MainActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
         } else if (id == R.id.nav_login) {
             writeEventAnalytics("App","Login");
 
             Intent i = new Intent(this, LoginActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivityForResult(i, Statics.REDDIT_LOGIN1);
-        } else if (id == R.id.nav_share) {
-
         } else if (id == R.id.nav_donate) {
             try {
                 Bundle buyIntentBundle = mApp.getBillingConnection().getBuyIntent(3, getPackageName(),

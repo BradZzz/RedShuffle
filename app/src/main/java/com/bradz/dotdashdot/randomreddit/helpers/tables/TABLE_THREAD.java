@@ -12,6 +12,7 @@ import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 public class TABLE_THREAD {
     public static void drop(SQLiteDatabase db) {
         db.execSQL("delete from "+ StockDBHelper.TABLE_THREADS);
+        db.close();
     }
 
     public static long add(SQLiteDatabase db, ContentValues values) {

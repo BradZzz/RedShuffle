@@ -17,8 +17,8 @@
 
         <LinearLayout
             android:id="@+id/image_outline"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:background="@drawable/black_border">
             <ImageView
                 android:id="@+id/sub_image"

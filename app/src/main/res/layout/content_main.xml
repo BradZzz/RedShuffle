@@ -8,6 +8,7 @@
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activity.MainActivity"
+    android:animateLayoutChanges="true"
     tools:showIn="@layout/app_bar_main">
 
     <ScrollView
@@ -44,19 +45,36 @@
                 android:gravity="start|center"
                 android:orientation="horizontal">
 
+                <FrameLayout
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_width="21dp"
+                    android:layout_height="match_parent">
+                    <ImageView
+                        android:id="@+id/visibility_icon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/ic_visibility_closed"/>
+                    <View
+                        android:id="@+id/visibility_toggle"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/custom_ripple"/>
+                </FrameLayout>
+
                 <TextView
                     android:id="@+id/updated_text"
                     android:textAlignment="textStart"
                     android:textSize="12sp"
                     android:layout_weight="1"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content" />
 
                 <android.support.v7.widget.SwitchCompat
                     android:id="@+id/switch_compat"
-                    android:layout_width="match_parent"
+                    android:layout_width="50dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="4"
                     android:checked="true"/>
 
             </LinearLayout>
