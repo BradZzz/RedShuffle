@@ -1,9 +1,9 @@
 ## RedShuffle
 
 ### Frameworks / Libraries
-Android Studio
-Volley
-Ion
+* Android Studio
+* Volley
+* Ion
 
 ### Description
 
