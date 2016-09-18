@@ -31,10 +31,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,14 +67,14 @@ public class ProfileActivity extends NavigationActivity {
                     boolean over_18 = jsonObject.getBoolean("over_18");
                     int inbox_count = jsonObject.getInt("inbox_count");
 
-                    TextView profileId = (TextView) findViewById(R.id.profile_id);
-                    profileId.setText("ID: " + id);
+                    /*TextView profileId = (TextView) findViewById(R.id.profile_id);
+                    profileId.setText("ID: " + id);*/
 
                     setActionBar(name);
 
-                    TextView profileCreated = (TextView) findViewById(R.id.profile_created);
+                    /*TextView profileCreated = (TextView) findViewById(R.id.profile_created);
                     String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date(created * 1000));
-                    profileCreated.setText("Since: " + currentDateTimeString);
+                    profileCreated.setText("Since: " + currentDateTimeString);*/
 
                     TextView profileLink = (TextView) findViewById(R.id.profile_link);
                     profileLink.setText(""+link_karma);
@@ -87,8 +85,8 @@ public class ProfileActivity extends NavigationActivity {
                     /*TextView profileEight = (TextView) findViewById(R.id.profile_over_18);
                     profileEight.setText(over_18 ? "Over 18" : "Under 18");*/
 
-                    TextView profileInbox = (TextView) findViewById(R.id.profile_inbox);
-                    profileInbox.setText(""+inbox_count);
+                    /*TextView profileInbox = (TextView) findViewById(R.id.profile_inbox);
+                    profileInbox.setText(""+inbox_count);*/
 
                 } catch (JSONException e) {
                     e.printStackTrace();

@@ -86,6 +86,7 @@ public class FavoriteActivity extends NavigationActivity {
 
         //Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI_SUBS,null,null,null,null);
         mCursorAdapter = new CursorAdapter(this,getFavorites(),0) {
+
             @Override
             public View newView(Context context, Cursor cursor, ViewGroup parent) {
                 return LayoutInflater.from(context).inflate(R.layout.favorites_row_layout,parent,false);
@@ -228,7 +229,13 @@ public class FavoriteActivity extends NavigationActivity {
     }
 
     private Cursor getFavorites(){
-        return getContentResolver().query(StockPriceContentProvider.CONTENT_URI_SUBS,null,null,null,null);
+        Cursor c =  getContentResolver().query(StockPriceContentProvider.CONTENT_URI_SUBS,null,null,null,null);
+
+        final TextView total = (TextView) findViewById(R.id.subreddit_total);
+        String fav_total = "" + c.getCount();
+        total.setText(fav_total);
+
+        return c;
     }
 
     @Override

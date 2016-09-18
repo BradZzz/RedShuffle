@@ -5,11 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/colorPrimaryLight"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".activity.ProfileActivity"
     tools:showIn="@layout/app_bar_profile">
 
-    <LinearLayout
+    <!-- <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
@@ -46,62 +47,75 @@
                 android:layout_marginLeft="20dp"
                 android:src="@drawable/ic_mail_outline"/>
         </LinearLayout>
-    </LinearLayout>
+    </LinearLayout> -->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_margin="10dp"
-        android:padding="10dp"
         android:orientation="horizontal">
-        <LinearLayout
+        <android.support.v7.widget.CardView
             android:layout_weight="1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/profile_link"
-                android:textAlignment="center"
-                android:textSize="18sp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp">
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="0"/>
-            <TextView
-                android:id="@+id/profile_link_desc"
-                android:textAlignment="center"
-                android:textSize="18sp"
-                android:layout_marginTop="5dp"
-                android:textStyle="bold"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="( Link Karma )"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/profile_comment"
-                android:textAlignment="center"
-                android:textSize="18sp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="0"/>
-            <TextView
-                android:id="@+id/profile_comment_desc"
-                android:textAlignment="center"
-                android:textSize="18sp"
-                android:layout_marginTop="5dp"
-                android:textStyle="bold"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="{ Comment Karma }"/>
-        </LinearLayout>
-    </LinearLayout>
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/profile_link"
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0"/>
+                <TextView
+                    android:id="@+id/profile_link_desc"
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    android:layout_marginTop="5dp"
+                    android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Link Karma"/>
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
 
-    <TextView
+        <android.support.v7.widget.CardView
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/profile_comment"
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="0"/>
+                <TextView
+                    android:id="@+id/profile_comment_desc"
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    android:layout_marginTop="5dp"
+                    android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Comment Karma"/>
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
+    <!-- <TextView
         android:id="@+id/profile_created"
         android:textAlignment="textStart"
         android:layout_margin="10dp"
@@ -110,7 +124,7 @@
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Since: Unknown..."/>
+        android:text="Since: Unknown..."/> -->
 
     <View
         android:id="@+id/divider"
@@ -126,7 +140,8 @@
         <ListView
             android:id="@+id/profile_listy"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:background="@color/white"/>
         <com.wang.avi.AVLoadingIndicatorView
             android:id="@+id/load_indicator"
             android:layout_width="wrap_content"
