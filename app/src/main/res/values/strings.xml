@@ -14,5 +14,8 @@
     <string name="loading_text">Loading...</string>
     <string name="description_header">Description</string>
 
+    <string name="about_description">RandomReddit was created and developed by Brad Zimmerman under the MIT license. All questions and concerns should be sent to his email at mauvemoonman@gmail.com</string>
+    <string name="about_footer">Made with &lt;3 in Seattle</string>
+
     <string name="CONTENTPROVIDER">com.bradz.dotdashdot.randomreddit.StockPriceContentProvider</string>
 </resources>

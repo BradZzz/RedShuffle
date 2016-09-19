@@ -349,7 +349,8 @@ public class MainActivity extends NavigationActivity {
                 if (first_image != null) {
                     contentValues.put(StockDBHelper.COLUMN_IMAGE, first_image);
                 }
-                contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
+
+                //contentValues.put(StockDBHelper.COLUMN_FAVORITE, 1);
                 contentValues.put(StockDBHelper.COLUMN_SEEN, 1);
 
                 String title = subredditpreferences.getString(Statics.CURRENTSUB_TITLE,"");

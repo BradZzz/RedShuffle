@@ -301,6 +301,10 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                 Toast.makeText(getApplicationContext(), "Something went fucking wrong", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+        } else if (id == R.id.nav_about) {
+            Intent i = new Intent(this, AboutActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(i);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

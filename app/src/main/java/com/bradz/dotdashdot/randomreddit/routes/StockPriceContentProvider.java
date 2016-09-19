@@ -20,8 +20,10 @@ public class StockPriceContentProvider extends ContentProvider {
     private static final String TABLE_THREADS = StockDBHelper.TABLE_THREADS;
     private static final String TABLE_SUBS = StockDBHelper.TABLE_SUBS;
 
+    public static final String CONTENT_URI_SUBS_BASE = "content://" + AUTHORITY + "/" + TABLE_SUBS;
+
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + TABLE_THREADS);
-    public static final Uri CONTENT_URI_SUBS = Uri.parse("content://" + AUTHORITY + "/" + TABLE_SUBS);
+    public static final Uri CONTENT_URI_SUBS = Uri.parse(CONTENT_URI_SUBS_BASE);
     public static final Uri CONTENT_DROP = Uri.parse("content://" + AUTHORITY + "/flush");
 
     public static final int THREAD = 1;
@@ -29,6 +31,7 @@ public class StockPriceContentProvider extends ContentProvider {
     public static final int FLUSH = 3;
 
     public static final int SUB = 4;
+    public static final int SUB_ID = 5;
     //public static final int STOCK_PORTFOLIO = 3;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -36,8 +39,11 @@ public class StockPriceContentProvider extends ContentProvider {
     static {
         sURIMatcher.addURI(AUTHORITY, TABLE_THREADS, THREAD);
         sURIMatcher.addURI(AUTHORITY, TABLE_THREADS + "/#", THREAD_ID);
+
         sURIMatcher.addURI(AUTHORITY, "flush", FLUSH);
+
         sURIMatcher.addURI(AUTHORITY, TABLE_SUBS, SUB);
+        sURIMatcher.addURI(AUTHORITY, TABLE_SUBS + "/#", SUB_ID);
     }
 
     private StockDBHelper dbHelper;
@@ -134,6 +140,9 @@ public class StockPriceContentProvider extends ContentProvider {
                 break;
             case THREAD:
                 rowsUpdated = TABLE_THREAD.updateBySymbol(dbHelper.getWritable(),values, selection);
+                break;
+            case SUB_ID:
+                rowsUpdated = TABLE_SUB.updateById(dbHelper.getWritable(),uri.getLastPathSegment(), values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);

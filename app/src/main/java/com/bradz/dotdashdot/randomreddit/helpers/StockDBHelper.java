@@ -1,8 +1,6 @@
 package com.bradz.dotdashdot.randomreddit.helpers;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -18,12 +16,14 @@ public class StockDBHelper extends SQLiteOpenHelper {
   public static final String COLUMN_NSFW = "nsfw";
   public static final String COLUMN_CREATED = "created";
 
+  //Just the subs table
   public static final String TABLE_SUBS = "SUBS";
   public static final String COLUMN_DESCRIPTION = "description";
   public static final String COLUMN_FAVORITE = "favorite";
   public static final String COLUMN_USERS = "users";
   public static final String COLUMN_SEEN = "seen";
 
+  //Just the threads table
   public static final String TABLE_THREADS = "THREADS";
   public static final String COLUMN_TITLE = "title";
   public static final String COLUMN_URL = "url";

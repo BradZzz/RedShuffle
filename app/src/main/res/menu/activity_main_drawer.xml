@@ -29,6 +29,10 @@
     <item android:title="Contribute">
         <menu>
             <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_copyright"
+                android:title="About" />
+            <item
                 android:id="@+id/nav_donate"
                 android:icon="@drawable/ic_attach_money"
                 android:title="Donate" />
