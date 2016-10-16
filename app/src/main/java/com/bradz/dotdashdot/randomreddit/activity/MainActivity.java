@@ -25,12 +25,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
-import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -39,20 +38,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
+import com.bradz.dotdashdot.randomreddit.adapters.SwipeAdapter;
 import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
+import com.bradz.dotdashdot.randomreddit.models.Thread;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
-import com.koushikdutta.ion.Ion;
+import com.daimajia.swipe.SwipeLayout;
+import com.daimajia.swipe.util.Attributes;
 import com.wang.avi.AVLoadingIndicatorView;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends NavigationActivity {
   private String TAG = this.getClass().getCanonicalName();
-  private CursorAdapter mCursorAdapter;
+  private SwipeAdapter mSwipeAdapter;
   private ContentResolver mResolver;
   private Context self;
   private TextView mUpdatedTextView;
@@ -146,7 +150,8 @@ public class MainActivity extends NavigationActivity {
     getContentResolver().registerContentObserver(StockPriceContentProvider.CONTENT_URI, true, new StockContentObserver(new Handler()));
     Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI, null, null, null, null);
     tView = ((TextView) titleToolbar.findViewById(R.id.title));
-    mCursorAdapter = new CursorAdapter(this, existingStocksCursor, 0) {
+    /*mCursorAdapter = new CursorAdapter(this, existingStocksCursor, 0) {
+
       @Override
       public View newView(Context context, Cursor cursor, ViewGroup parent) {
         return LayoutInflater.from(context).inflate(R.layout.article_row_layout, parent, false);
@@ -187,6 +192,9 @@ public class MainActivity extends NavigationActivity {
           .placeholder(R.drawable.reddit_logo)
           .error(R.drawable.reddit_logo)
           .load(image);
+
+        //initSwipe(view);
+
         view.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -200,9 +208,20 @@ public class MainActivity extends NavigationActivity {
           }
         });
       }
-    };
+    };*/
+
     listView = (ListView) findViewById(R.id.stock_price_list);
-    listView.setAdapter(mCursorAdapter);
+
+    mSwipeAdapter = new SwipeAdapter(this, cursorToList(existingStocksCursor));
+    listView.setAdapter(mSwipeAdapter);
+    mSwipeAdapter.setMode(Attributes.Mode.Single);
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ((SwipeLayout)(listView.getChildAt(position - listView.getFirstVisiblePosition()))).open(true);
+      }
+    });
+
     listView.setOnScrollListener(new AbsListView.OnScrollListener() {
       @Override
       public void onScrollStateChanged(AbsListView absListView, int i) {
@@ -239,6 +258,33 @@ public class MainActivity extends NavigationActivity {
     if (existingStocksCursor.getCount() < 1) {
       reroll();
     }
+  }
+
+  private List<Thread> cursorToList(Cursor existingStocksCursor){
+    List<Thread> thread = new ArrayList<Thread>();
+    for (int i = 0; i < existingStocksCursor.getCount(); i++) {
+      existingStocksCursor.moveToPosition(i);
+      String title = existingStocksCursor.getString(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_TITLE));
+      final String url = existingStocksCursor.getString(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_URL));
+      String image = existingStocksCursor.getString(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_IMAGE));
+      String sub = existingStocksCursor.getString(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
+      String full_image = existingStocksCursor.getString(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_FULL_IMAGE));
+      int votes = existingStocksCursor.getInt(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_VOTES));
+      int nsfw = existingStocksCursor.getInt(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
+      final String comment = existingStocksCursor.getString(existingStocksCursor.getColumnIndex(StockDBHelper.COLUMN_COMMENTS));
+
+      thread.add(new Thread(title, url, image, votes, full_image, comment, nsfw == 1));
+
+      if (first_image == null && image != null && !image.isEmpty() && image.contains("http")) {
+        first_image = image;
+      }
+      String subby = "/" + sub;
+      if (tView != null && !tView.getText().equals(subby)) {
+        tView.setText(subby);
+        writeEventAnalytics("Sub", "New", sub);
+      }
+    }
+    return thread;
   }
 
   private void initActionBar() {
@@ -443,8 +489,9 @@ public class MainActivity extends NavigationActivity {
       } else {
         setDate(true);
       }
-      //getContentResolver().query(StockPriceContentProvider.CONTENT_DROP,null,null,null,null);
-      mCursorAdapter.swapCursor(cursor);
+
+      mSwipeAdapter.swapList(cursorToList(cursor));
+      mSwipeAdapter.notifyDataSetChanged();
     }
   }
 

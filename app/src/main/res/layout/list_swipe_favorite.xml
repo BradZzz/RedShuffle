@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<com.daimajia.swipe.SwipeLayout
+    xmlns:swipe="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    swipe:leftEdgeSwipeOffset="100dp"
+    swipe:rightEdgeSwipeOffset="0dp">
+
+    <include android:id="@+id/bottom_wrapper" layout="@layout/favorite_slider_inner"
+             android:layout_width="wrap_content" android:layout_height="match_parent"/>
+
+    <include android:id="@+id/bottom_wrapper" layout="@layout/favorite_slider_outer"
+             android:layout_width="match_parent" android:layout_height="match_parent"/>
+
+</com.daimajia.swipe.SwipeLayout>

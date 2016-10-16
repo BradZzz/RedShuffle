@@ -18,7 +18,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
-import com.bradz.dotdashdot.randomreddit.models.Stock;
+import com.bradz.dotdashdot.randomreddit.models.Thread;
 import com.bradz.dotdashdot.randomreddit.models.Subreddit;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
@@ -129,7 +129,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
-                        List<Stock> threads = new ArrayList<Stock>();
+                        List<Thread> threads = new ArrayList<Thread>();
                         JSONObject data = response.getJSONObject("data");
                         JSONArray children = data.getJSONArray("children");
                         for (int i = 0; i < children.length(); i++) {
@@ -147,12 +147,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 }
                             }
 
-                            Stock thread = new Stock(
+                            Thread thread = new Thread(
                                 data2.getString("title"),
                                 data2.getString("url"),
                                 data2.getString("thumbnail"),
                                 Integer.valueOf(data2.getString("ups")),
                                 image_url,
+                                data2.getString("permalink"),
                                 Boolean.valueOf(data2.getString("over_18"))
                             );
                             threads.add(thread);
@@ -182,7 +183,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         queue.add(request);
     }
 
-    public void updateStockInfo(List<Stock> threads, Subreddit sub, boolean deleting){
+    public void updateStockInfo(List<Thread> threads, Subreddit sub, boolean deleting){
         if (deleting) {
             mResolver.delete(StockPriceContentProvider.CONTENT_URI, null, null);
         }
@@ -198,7 +199,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             contentValues.put(StockDBHelper.COLUMN_VOTES, threads.get(i).getVotes());
             contentValues.put(StockDBHelper.COLUMN_SUB, sub.getDisplay_name());
             contentValues.put(StockDBHelper.COLUMN_IMAGE, threads.get(i).getImage());
-
+            contentValues.put(StockDBHelper.COLUMN_COMMENTS, threads.get(i).getComments());
             contentValues.put(StockDBHelper.COLUMN_NSFW, threads.get(i).isNsfw());
             contentValues.put(StockDBHelper.COLUMN_FULL_IMAGE, threads.get(i).getFull_image());
             contentValues.put(StockDBHelper.COLUMN_CREATED, "" + (System.currentTimeMillis()));

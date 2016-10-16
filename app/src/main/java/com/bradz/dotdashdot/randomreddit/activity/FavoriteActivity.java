@@ -4,38 +4,29 @@ import android.accounts.Account;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bradz.dotdashdot.randomreddit.R;
+import com.bradz.dotdashdot.randomreddit.adapters.SwipeFavoriteAdapter;
 import com.bradz.dotdashdot.randomreddit.application.ParentApplication;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
 import com.bradz.dotdashdot.randomreddit.routes.StockPriceContentProvider;
 import com.bradz.dotdashdot.randomreddit.services.RequestService;
 import com.bradz.dotdashdot.randomreddit.utils.Statics;
-import com.koushikdutta.ion.Ion;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import com.daimajia.swipe.SwipeLayout;
+import com.daimajia.swipe.util.Attributes;
 
 /*
     Two conditions for when a favorite should be updated:
@@ -79,7 +70,7 @@ public class FavoriteActivity extends NavigationActivity {
   };
 
   private Context self;
-  private CursorAdapter mCursorAdapter;
+  private SwipeFavoriteAdapter mCursorAdapter;
   ContentResolver mResolver;
   public static final String AUTHORITY = Statics.CONTENTPROVIIDER;
   private Account mAccount;
@@ -116,7 +107,7 @@ public class FavoriteActivity extends NavigationActivity {
 
   private void initList() {
     //Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI_SUBS,null,null,null,null);
-    mCursorAdapter = new CursorAdapter(this, getFavorites(), 0) {
+    /*mCursorAdapter = new CursorAdapter(this, getFavorites(), 0) {
 
       @Override
       public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -148,33 +139,15 @@ public class FavoriteActivity extends NavigationActivity {
           LinearLayout outline = (LinearLayout) view.findViewById(R.id.image_outline);
           outline.setBackground(getResources().getDrawable(R.drawable.red_border));
         }
-
         sub.setText(subreddit);
-                /*if (nsfw > 0) {
-                    nsfwText.setVisibility(View.VISIBLE);
-                    nsfwText.setTextColor(Color.RED);
-                    nsfwText.setText("nsfw");
-                } else {
-                    nsfwText.setVisibility(View.GONE);
-                }*/
-
-                /*String usersString = "Users: "+users;
-                usersText.setText(usersString);*/
-
         SimpleDateFormat sdfDate = new SimpleDateFormat("MM/dd/yy HH:mm:ss");//dd/MM/yyyy
         Date now = new Date(Long.valueOf(created));
         String strDate = sdfDate.format(now);
-
         //Calendar calendar = Calendar.getInstance();
         //calendar.setTimeInMillis(Long.valueOf(created));
-
         //String createdString = calendar.getTime().toString();
         usersText.setText(strDate);
-
         titleText.setText(title);
-        //String seenS = "Seen: "+seenSub;
-        //seen.setText(seenS);
-
         Ion.with(sub_image)
           .placeholder(R.drawable.reddit_logo)
           .error(R.drawable.reddit_logo)
@@ -252,10 +225,18 @@ public class FavoriteActivity extends NavigationActivity {
           }
         });
       }
-    };
+    };*/
 
-    ListView listView = (ListView) findViewById(R.id.stock_price_list);
+    final ListView listView = (ListView) findViewById(R.id.stock_price_list);
+    mCursorAdapter = new SwipeFavoriteAdapter(this, getFavorites());
     listView.setAdapter(mCursorAdapter);
+    mCursorAdapter.setMode(Attributes.Mode.Single);
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        ((SwipeLayout)(listView.getChildAt(position - listView.getFirstVisiblePosition()))).open(true);
+      }
+    });
   }
 
   private Cursor getFavorites() {

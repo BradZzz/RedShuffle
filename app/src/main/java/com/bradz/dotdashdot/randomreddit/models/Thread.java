@@ -3,21 +3,23 @@ package com.bradz.dotdashdot.randomreddit.models;
 /**
  * Created by drewmahrt on 3/6/16.
  */
-public class Stock {
+public class Thread {
     private String title;
     private String url;
     private int votes;
     private String image;
     private String full_image;
+    private String comments;
     private boolean nsfw;
 
-    public Stock(String title, String url, String image, int votes, String full_image, boolean nsfw){
+    public Thread(String title, String url, String image, int votes, String full_image, String comments, boolean nsfw){
         this.title = title;
         this.url = url;
         this.votes = votes;
         this.image = image;
         this.full_image = full_image;
         this.nsfw = nsfw;
+        this.comments = comments;
     }
 
     public String getImage() {
@@ -66,5 +68,13 @@ public class Stock {
 
     public void setNsfw(boolean nsfw) {
         this.nsfw = nsfw;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }

@@ -71,7 +71,7 @@
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" />
-
+v
                 <android.support.v7.widget.SwitchCompat
                     android:id="@+id/switch_compat"
                     android:layout_width="50dp"

@@ -4,10 +4,28 @@
     <color name="colorPrimaryIntermediate">#5E6FC7</color>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorAccent">#FF5722</color>
+
+    <color name="colorSecondaryIntermediate">#94CE98</color>
+    <color name="colorSecondary">#388E3E</color>
+    <color name="colorSecondaryDark">#064E0B</color>
+
+    <color name="colorTertiaryIntermediate">#FF8686</color>
+    <color name="colorTertiary">#D32F2F</color>
+    <color name="colorTertiaryDark">#850000</color>
+
+    <!-- Transparent colors-->
+    <color name="transColorPrimaryLight">#33C5CAE9</color>
+    <color name="transColorPrimaryIntermediate">#335E6FC7</color>
+    <color name="transColorPrimary">#333F51B5</color>
+    <color name="transColorPrimaryDark">#33303F9F</color>
+    <color name="transColorAccent">#33FF5722</color>
 
     <color name="dividerColor">#494949</color>
 
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
+
+    <color name="transparent">#00000000</color>
 </resources>

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class StockDBHelper extends SQLiteOpenHelper {
 
-  private static final int DATABASE_VERSION = 4;
+  private static final int DATABASE_VERSION = 5;
   private static final String DATABASE_NAME = "redditDB.db";
 
   //Columns that are included in multiple tables
@@ -28,10 +28,11 @@ public class StockDBHelper extends SQLiteOpenHelper {
   public static final String COLUMN_TITLE = "title";
   public static final String COLUMN_URL = "url";
   public static final String COLUMN_VOTES = "votes";
+  public static final String COLUMN_COMMENTS = "comments";
   public static final String COLUMN_FULL_IMAGE = "full_image";
 
   public static final String[] ALL_COLUMNS_THREAD = new String[]{COLUMN_ID, COLUMN_TITLE, COLUMN_URL,
-          COLUMN_VOTES, COLUMN_SUB, COLUMN_IMAGE, COLUMN_FULL_IMAGE, COLUMN_NSFW, COLUMN_CREATED};
+          COLUMN_VOTES, COLUMN_SUB, COLUMN_IMAGE, COLUMN_FULL_IMAGE, COLUMN_COMMENTS, COLUMN_NSFW, COLUMN_CREATED};
   public static final String[] ALL_COLUMNS_SUBS = new String[]{COLUMN_ID, COLUMN_IMAGE, COLUMN_SUB,
           COLUMN_FAVORITE, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_NSFW, COLUMN_USERS, COLUMN_CREATED};
 
@@ -50,6 +51,7 @@ public class StockDBHelper extends SQLiteOpenHelper {
             + COLUMN_SUB + " TEXT,"
             + COLUMN_FULL_IMAGE + " TEXT,"
             + COLUMN_IMAGE + " TEXT,"
+            + COLUMN_COMMENTS + " TEXT,"
             + COLUMN_NSFW + " INTEGER,"
             + COLUMN_CREATED + " TEXT)";
     db.execSQL(CREATE_THREADS_TABLE);
