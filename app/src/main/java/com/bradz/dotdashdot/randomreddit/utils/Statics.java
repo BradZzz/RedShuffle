@@ -58,6 +58,9 @@ public class Statics {
     public static int REDDIT_SUBREDDITS = 1500;
     public static int REDDIT_SUBREDDIT_SUBSCRIBE = 1501;
     public static int REDDIT_SUBREDDIT_UNSUBSCRIBE = 1502;
+    public static int REDDIT_SUBREDDIT_FAVORITE_UNSUBSCRIBE = 1503;
+    public static int REDDIT_SUBREDDIT_NAV = 1504;
+    public static int REDDIT_SUBREDDIT_PRESUBSCRIBE = 1505;
 
     public static String CONTENTPROVIIDER = "com.bradz.dotdashdot.randomreddit.StockPriceContentProvider";
 

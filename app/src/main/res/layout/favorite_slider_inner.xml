@@ -35,4 +35,18 @@
             android:src="@drawable/ic_delete"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/url_button"
+        android:layout_weight="1"
+        android:layout_width="75dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/button_click_secondary">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="25dp"
+            android:paddingRight="25dp"
+            android:src="@drawable/ic_arrow_forward"/>
+    </LinearLayout>
+
 </LinearLayout>

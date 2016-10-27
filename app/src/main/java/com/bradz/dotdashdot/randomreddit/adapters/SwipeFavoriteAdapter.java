@@ -4,6 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,7 @@ import android.widget.TextView;
 
 import com.bradz.dotdashdot.randomreddit.R;
 import com.bradz.dotdashdot.randomreddit.helpers.StockDBHelper;
+import com.bradz.dotdashdot.randomreddit.utils.Statics;
 import com.daimajia.swipe.adapters.BaseSwipeAdapter;
 import com.koushikdutta.ion.Ion;
 
@@ -27,10 +31,12 @@ public class SwipeFavoriteAdapter extends BaseSwipeAdapter {
 
   private Context self;
   private Cursor cursor;
+  private Handler handler;
 
-  public SwipeFavoriteAdapter(Context mContext, Cursor cursor) {
+  public SwipeFavoriteAdapter(Context mContext, Cursor cursor, Handler handler) {
     this.self = mContext;
     this.cursor = cursor;
+    this.handler = handler;
   }
 
   @Override
@@ -98,10 +104,14 @@ public class SwipeFavoriteAdapter extends BaseSwipeAdapter {
         alertDialog2.setPositiveButton("Confirm",
           new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-              /*writeEventAnalytics("Sub", "Fav - Remove", subreddit);
-              self.getContentResolver().delete(StockPriceContentProvider.CONTENT_URI_SUBS, "sub = '" + subreddit + "'", null);
-              Toast.makeText(self.getApplicationContext(), "Removed Favorite", Toast.LENGTH_SHORT).show();
-              mCursorAdapter.swapCursor(getFavorites());*/
+              Message msg = Message.obtain();
+              Bundle b = new Bundle();
+              b.putInt("type", Statics.REDDIT_SUBREDDIT_FAVORITE_UNSUBSCRIBE);
+              b.putLong("request_time", System.currentTimeMillis());
+              b.putString("sub",subreddit);
+              b.putBoolean("error", false);
+              msg.setData(b);
+              handler.sendMessage(msg);
             }
           });
         alertDialog2.setNegativeButton("Cancel",
@@ -114,48 +124,35 @@ public class SwipeFavoriteAdapter extends BaseSwipeAdapter {
       }
     });
 
-    /*View subscribe = view.findViewById(R.id.subscribe_sub);
+    View subscribe = view.findViewById(R.id.subscribe_sub);
     subscribe.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-
-        writeEventAnalytics("Sub", "Subscribe", subreddit);
-
-        final Map<String, String> params = new HashMap<>();
-        params.put("action", "sub");
-        params.put("sr_name", subreddit);
-
-        final Map<String, String> headers = new HashMap<>();
-        String access_token = sharedpreferences.getString(Statics.SHAREDSETTINGS_REDDITACCESSTOKEN, "");
-        if (!access_token.equals("")) {
-          headers.put("Authorization", "bearer " + access_token);
-
-          Log.i("Favorites", "Sub url: " + Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSUBSCRIBE);
-
-          lastClicked = subreddit;
-
-          mRequestService.createPostRequest(self, profileHandler,
-            Statics.REDDIT_API_BASEURL + Statics.REDDIT_API_SUBREDDITSUBSCRIBE, params, headers, Statics.REDDIT_SUBREDDIT_SUBSCRIBE);
-        } else {
-          Toast.makeText(self, "Please login to use the subscribe feature", Toast.LENGTH_SHORT).show();
-        }
+        Message msg = Message.obtain();
+        Bundle b = new Bundle();
+        b.putInt("type", Statics.REDDIT_SUBREDDIT_PRESUBSCRIBE);
+        b.putLong("request_time", System.currentTimeMillis());
+        b.putString("sub",subreddit);
+        b.putBoolean("error", false);
+        msg.setData(b);
+        handler.sendMessage(msg);
       }
     });
 
-    view.setOnClickListener(new View.OnClickListener() {
+    View url = view.findViewById(R.id.url_button);
+    url.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, false);
-
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        settingsBundle.putString("subreddit", "https://www.reddit.com/r/" + subreddit + "/about.json");
-        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-        finish();
+        Message msg = Message.obtain();
+        Bundle b = new Bundle();
+        b.putInt("type", Statics.REDDIT_SUBREDDIT_NAV);
+        b.putLong("request_time", System.currentTimeMillis());
+        b.putString("sub",subreddit);
+        b.putBoolean("error", false);
+        msg.setData(b);
+        handler.sendMessage(msg);
       }
-    });*/
+    });
   }
 
   @Override

@@ -150,68 +150,7 @@ public class MainActivity extends NavigationActivity {
     getContentResolver().registerContentObserver(StockPriceContentProvider.CONTENT_URI, true, new StockContentObserver(new Handler()));
     Cursor existingStocksCursor = getContentResolver().query(StockPriceContentProvider.CONTENT_URI, null, null, null, null);
     tView = ((TextView) titleToolbar.findViewById(R.id.title));
-    /*mCursorAdapter = new CursorAdapter(this, existingStocksCursor, 0) {
-
-      @Override
-      public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.article_row_layout, parent, false);
-      }
-
-      @Override
-      public void bindView(View view, Context context, Cursor cursor) {
-        TextView text1 = (TextView) view.findViewById(R.id.text1);
-        TextView text2 = (TextView) view.findViewById(R.id.text2);
-        ImageView sub_image = (ImageView) view.findViewById(R.id.sub_image);
-        sub_image.setClipToOutline(true);
-        view.setBackgroundResource(android.R.color.background_light);
-        String title = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_TITLE));
-        final String url = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_URL));
-        String image = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_IMAGE));
-        String sub = cursor.getString(cursor.getColumnIndex(StockDBHelper.COLUMN_SUB));
-        int votes = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_VOTES));
-        int nsfw = cursor.getInt(cursor.getColumnIndex(StockDBHelper.COLUMN_NSFW));
-        LinearLayout outline = (LinearLayout) view.findViewById(R.id.image_outline);
-        if (nsfw > 0) {
-          outline.setBackground(getResources().getDrawable(R.drawable.red_border));
-        } else {
-          outline.setBackground(getResources().getDrawable(R.drawable.black_border));
-        }
-
-        if (first_image == null && image != null && !image.isEmpty() && image.contains("http")) {
-          first_image = image;
-        }
-        String subby = "/" + sub;
-        if (tView != null && !tView.getText().equals(subby)) {
-          tView.setText(subby);
-          writeEventAnalytics("Sub", "New", sub);
-        }
-        text1.setText(title);
-        String voteString = "Votes: " + votes;
-        text2.setText(voteString);
-        Ion.with(sub_image)
-          .placeholder(R.drawable.reddit_logo)
-          .error(R.drawable.reddit_logo)
-          .load(image);
-
-        //initSwipe(view);
-
-        view.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            String linkUrl = url.replace("amp;", "");
-            if (!linkUrl.startsWith("http://") && !linkUrl.startsWith("https://")) {
-              linkUrl = "http://" + linkUrl;
-            }
-            i.setData(Uri.parse(linkUrl));
-            startActivity(i);
-          }
-        });
-      }
-    };*/
-
     listView = (ListView) findViewById(R.id.stock_price_list);
-
     mSwipeAdapter = new SwipeAdapter(this, cursorToList(existingStocksCursor));
     listView.setAdapter(mSwipeAdapter);
     mSwipeAdapter.setMode(Attributes.Mode.Single);
@@ -489,7 +428,6 @@ public class MainActivity extends NavigationActivity {
       } else {
         setDate(true);
       }
-
       mSwipeAdapter.swapList(cursorToList(cursor));
       mSwipeAdapter.notifyDataSetChanged();
     }
@@ -497,7 +435,6 @@ public class MainActivity extends NavigationActivity {
 
   private void setDate(boolean scroll) {
     first_image = null;
-
     mUpdatedTextView = (TextView) findViewById(R.id.updated_text);
     String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
     mUpdatedTextView.setText("Last updated: " + currentDateTimeString);
@@ -564,51 +501,4 @@ public class MainActivity extends NavigationActivity {
       listView.smoothScrollToPosition(0);
     }
   }
-
-    /*@SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-
-        } else if (id == R.id.nav_profile) {
-            Intent i = new Intent(this, ProfileActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
-        } else if (id == R.id.nav_favorites) {
-            Intent i = new Intent(this, FavoriteActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(i);
-        } else if (id == R.id.nav_logout) {
-            writeEventAnalytics("App","Logout");
-
-            Toast.makeText( getBaseContext(), "Logged out", Toast.LENGTH_SHORT).show();
-            LoginHelper.setLogOut(sharedpreferences, navView);
-        } else if (id == R.id.nav_login) {
-            writeEventAnalytics("App","Login");
-
-            Intent i = new Intent(this, LoginActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivityForResult(i, Statics.REDDIT_LOGIN1);
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_donate) {
-            try {
-                Bundle buyIntentBundle = mApp.getBillingConnection().getBuyIntent(3, getPackageName(),
-                        Statics.PURCHASES_DONATION_DOLLAR, "inapp", Statics.DEVELOPER_CALLBACK_ID);
-                PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
-                if (pendingIntent != null) {
-                    startIntentSenderForResult(pendingIntent.getIntentSender(), 1001, new Intent(), 0, 0, 0);
-                }
-            } catch (RemoteException | IntentSender.SendIntentException e) {
-                Toast.makeText(getApplicationContext(), "Something went fucking wrong", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            }
-        }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }*/
 }
